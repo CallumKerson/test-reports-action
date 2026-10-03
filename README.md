@@ -10,7 +10,7 @@ An opinionated test reporter for GitHub Actions.
 
 ```yaml
 steps:
-  - uses: CallumKerson/test-reports-action@v1
+  - uses: CallumKerson/test-reports-action@v0
     with:
       milliseconds: 1000
 ```
@@ -39,11 +39,12 @@ before any `mise run` task when `package.json` or `package-lock.json` change.
 | `mise run local-action` | Runs the action locally with inputs from `.env`     |
 | `mise run check`        | Lints changed files (`check-all` for every file)    |
 | `mise run fix`          | Fixes changed files (`fix-all` for every file)      |
-| `mise run all`          | Fixes, tests and bundles everything, ready to commit |
+| `mise run all`          | Fixes, type checks and tests everything             |
 | `mise run ci`           | Runs the same checks as CI                          |
 
-`dist/index.js` is what GitHub runs, so run `mise run package` and commit
-`dist/` with any change to `src/`. CI fails if it is out of date.
+`dist/index.js` is what GitHub runs, and on `main` it is always the latest
+release's build. Don't commit `dist/`: the release PR rebuilds and commits it,
+and CI fails if any other PR changes it.
 
 For `local-action`, copy [`.env.example`](./.env.example) to `.env` and set the
 inputs there.
@@ -54,5 +55,9 @@ their tools or editors only look for at the root: `tsconfig.json`,
 
 ## Releasing
 
-[`script/release`](./script/release) tags a new release and moves the major
-version tag (e.g. `v1`) to it.
+Releases are made with [release-please](https://github.com/googleapis/release-please)
+from [conventional commits](https://www.conventionalcommits.org).
+Every push to `main` updates a release PR with the next version and changelog,
+and the release workflow commits a fresh build of `dist/` to it.
+Merging the release PR tags the release and moves the major version tag, such
+as `v0`, to it.

@@ -1,12 +1,10 @@
-# `uses:` runs the committed dist/index.js, which is bundled from src/. This
-# fails if the committed dist/ does not match a fresh `mise run package`.
+# `uses:` runs the committed dist/index.js, which is the latest release's build
+# of src/. Only the release PR updates it, so this checks that the release PR's
+# dist/ matches a fresh `mise run package`, and that no other PR touches dist/.
 name: Check dist
 
 on:
   pull_request:
-  push:
-    branches: ['main']
-  merge_group:
 
 permissions:
   contents: read
@@ -22,15 +20,28 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Check dist/ is unchanged
+        if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if ! git diff --quiet "origin/$BASE_REF...HEAD" -- dist/; then
+            echo "::error::dist/ is only updated by the release PR, revert the changes to it"
+            exit 1
+          fi
       - name: Install tooling
+        if: ${{ startsWith(github.head_ref, 'release-please--') }}
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-      - run: mise run package
+      - if: ${{ startsWith(github.head_ref, 'release-please--') }}
+        run: mise run package
       - name: Compare dist/
         id: diff
+        if: ${{ startsWith(github.head_ref, 'release-please--') }}
         run: |
           if [ -n "$(git status --porcelain dist/)" ]; then
-            echo "dist/ is out of date, run 'mise run package' and commit:"
+            echo "dist/ is out of date with src/:"
             git diff --text dist/
             exit 1
           fi

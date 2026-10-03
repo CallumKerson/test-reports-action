@@ -32,6 +32,7 @@ Linters are also wired to git hooks through `.config/hk.pkl`.
 
 This is a JavaScript GitHub Action, defined by `action.yaml`.
 GitHub runs the committed `dist/index.js`, never `src/` directly.
+On `main`, `dist/` is the latest release's build, not a build of `main`.
 
 - `src/index.ts` - Entry point, which only calls `run()`
 - `src/main.ts` - `run()`, which reads inputs and sets outputs through
@@ -41,10 +42,11 @@ GitHub runs the committed `dist/index.js`, never `src/` directly.
 
 ### Constraints that must not be broken
 
-- **`dist/` must match `src/`.**
-  Run `mise run package` and commit `dist/` with every change to `src/` or to
-  runtime dependencies.
-  The `check-dist` workflow fails otherwise.
+- **Never commit `dist/`.**
+  The release workflow in `.github/workflows/main.yaml` rebuilds it on the
+  release-please PR, so it ships together with the version bump and changelog.
+  The `check-dist` workflow fails any other PR that changes `dist/`, and checks
+  that the release PR's `dist/` matches `src/`.
 - **`dist/` must be machine independent and readable.**
   tsdown writes each bundled module's path into `dist/index.js` and its
   sourcemap. `AUBE_NODE_LINKER=hoisted` in `.config/mise.toml` installs a flat
