@@ -37,6 +37,11 @@ is the file name without the format suffix, so `unit.junit.xml` becomes
 added to tell them apart. It also writes the results and the details of every
 failed test to the job summary.
 
+GitHub limits a job summary to 1 MiB. When the full summary is bigger than
+that, the job summary shows at most 50 failures per report and 50 lines of
+each failure's output. The full summary is uploaded as an HTML artifact,
+linked from the job summary, and kept for `retention-days`.
+
 The step fails if any test failed, and only warns when it finds no reports.
 
 Setting commit statuses needs the `statuses: write` permission. Without it,
@@ -47,9 +52,10 @@ Go needs the `-json` flag: plain `go test` output can't be parsed.
 
 [go-test-json]: https://pkg.go.dev/cmd/test2json
 
-| Input   | Description                       | Default               |
-| ------- | --------------------------------- | --------------------- |
-| `token` | Token used to set commit statuses | `${{ github.token }}` |
+| Input            | Description                                | Default               |
+| ---------------- | ------------------------------------------ | --------------------- |
+| `token`          | Token used to set commit statuses          | `${{ github.token }}` |
+| `retention-days` | Days to keep the full summary artifact for | `7`                   |
 
 ## Development
 

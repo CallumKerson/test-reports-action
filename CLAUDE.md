@@ -43,8 +43,10 @@ On `main`, `dist/` is the latest release's build, not a build of `main`.
   model in `src/report.ts`
 - `src/summary.ts`, `src/status.ts` - write the job summary and the
   `Tests / <name>` commit statuses
-- `__tests__/` - Jest tests, which mock `@actions/core` and `@actions/github`
-  with the stubs in `__fixtures__/`
+- `src/artifact.ts` - uploads the full summary as an artifact when it is over
+  GitHub's 1 MiB limit, and the job summary is cut short
+- `__tests__/` - Jest tests, which mock `@actions/core`, `@actions/github` and
+  `@actions/artifact` with the stubs in `__fixtures__/`
 - `__fixtures__/junit/*.xml`, `__fixtures__/gotest/*.jsonl` - sample reports,
   named so the action doesn't find them when it runs on this repository
 

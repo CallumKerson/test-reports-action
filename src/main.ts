@@ -23,8 +23,9 @@ export async function run(): Promise<void> {
       return
     }
 
+    const retentionDays = parseRetentionDays(core.getInput('retention-days'))
     const reports = await Promise.all(files.map(readReport))
-    await writeSummary(reports)
+    await writeSummary(reports, retentionDays)
     await setStatuses(core.getInput('token', { required: true }), reports)
 
     const failed = reports.reduce(
@@ -50,4 +51,14 @@ async function readReport(file: ReportFile): Promise<TestReport> {
       { cause: error }
     )
   }
+}
+
+function parseRetentionDays(input: string): number {
+  const days = Number(input)
+  if (!Number.isInteger(days) || days < 1) {
+    throw new Error(
+      `retention-days must be a whole number of days, at least 1, not '${input}'`
+    )
+  }
+  return days
 }
