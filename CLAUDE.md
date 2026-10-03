@@ -16,8 +16,8 @@ aube's layout.
 
 - **Test**: `mise run test` - Runs the Jest tests with coverage
 - **Type check**: `mise run typecheck` - Runs `tsc --noEmit` over `src/`
-- **Package**: `mise run package` - Bundles `src/` into `dist/index.js` with
-  rollup
+- **Package**: `mise run package` - Bundles `src/` and every dependency into
+  `dist/index.js` with [tsdown](https://tsdown.dev)
 - **Fix**: `mise run fix-all` - Runs all formatters and auto-fixable linters
   via [hk](https://hk.jdx.dev/)
 - **Check**: `mise run check-all` - Runs all linters without fixing
@@ -45,18 +45,20 @@ GitHub runs the committed `dist/index.js`, never `src/` directly.
   Run `mise run package` and commit `dist/` with every change to `src/` or to
   runtime dependencies.
   The `check-dist` workflow fails otherwise.
-- **The sourcemap must be machine independent.**
-  `AUBE_NODE_LINKER=hoisted` in `.config/mise.toml` installs a flat npm-style
-  `node_modules`, so the paths rollup records in `dist/index.js.map` are the
-  same locally and in CI.
+- **`dist/` must be machine independent and readable.**
+  tsdown writes each bundled module's path into `dist/index.js` and its
+  sourcemap. `AUBE_NODE_LINKER=hoisted` in `.config/mise.toml` installs a flat
+  npm-style `node_modules`, so those paths are the same locally and in CI.
+  Do not minify to get around this: the action is public, and people audit
+  `dist/index.js` before using it.
   The flat tree also lets code import packages it does not declare, so add
   every import to `package.json`.
 
 ## Configuration
 
 Tool configuration lives in `.config/`, except for files their tools or editors
-only look for at the root: `tsconfig.json`, `.oxlintrc.json` and
-`.oxfmtrc.json`.
+only look for at the root: `tsconfig.json`, `tsdown.config.ts`,
+`.oxlintrc.json` and `.oxfmtrc.json`.
 YAML files use the `.yaml` extension.
 
 - Formatting is oxfmt, with no semicolons, single quotes and no trailing commas

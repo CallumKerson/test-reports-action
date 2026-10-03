@@ -10,6 +10,7 @@ full_check_paths=(
 	.oxfmtrc.json
 	.oxlintrc.json
 	tsconfig.json
+	tsdown.config.ts
 )
 
 if [ "$(git branch --show-current)" = "main" ]; then
