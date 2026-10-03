@@ -12,7 +12,8 @@ import type { TestReport } from '../src/report.js'
 const findReports = jest.fn<(workspace: string) => Promise<ReportFile[]>>()
 const setStatuses =
   jest.fn<(token: string, reports: TestReport[]) => Promise<void>>()
-const writeSummary = jest.fn<(reports: TestReport[]) => Promise<void>>()
+const writeSummary =
+  jest.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
 
 // Mocks should be declared before the module being tested is imported.
 jest.unstable_mockModule('@actions/core', () => core)
@@ -35,7 +36,9 @@ describe('main.ts', () => {
   beforeEach(async () => {
     workspace = await mkdtemp(path.join(tmpdir(), 'main-'))
     process.env.GITHUB_WORKSPACE = workspace
-    core.getInput.mockReturnValue('token')
+    core.getInput.mockImplementation(
+      (name) => ({ token: 'token', 'retention-days': '7' })[name] ?? ''
+    )
   })
 
   afterEach(async () => {
@@ -61,7 +64,7 @@ describe('main.ts', () => {
         cases: [{ suite: 's', name: 'a', status: 'passed', durationMs: 0 }]
       }
     ]
-    expect(writeSummary).toHaveBeenCalledWith(reports)
+    expect(writeSummary).toHaveBeenCalledWith(reports, 7)
     expect(core.getInput).toHaveBeenCalledWith('token', { required: true })
     expect(setStatuses).toHaveBeenCalledWith('token', reports)
     expect(core.setFailed).not.toHaveBeenCalled()
@@ -121,6 +124,25 @@ describe('main.ts', () => {
     )
     expect(setStatuses).not.toHaveBeenCalled()
   })
+
+  it.each(['0', '1.5', 'week', ''])(
+    'Fails when retention-days is %p',
+    async (days) => {
+      core.getInput.mockImplementation((name) =>
+        name === 'retention-days' ? days : 'token'
+      )
+      findReports.mockResolvedValue([
+        await report('unit', '<testsuite><testcase name="a"/></testsuite>')
+      ])
+
+      await run()
+
+      expect(core.setFailed).toHaveBeenCalledWith(
+        `retention-days must be a whole number of days, at least 1, not '${days}'`
+      )
+      expect(writeSummary).not.toHaveBeenCalled()
+    }
+  )
 
   it('Searches the current directory outside of Actions', async () => {
     delete process.env.GITHUB_WORKSPACE

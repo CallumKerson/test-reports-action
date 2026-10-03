@@ -12,5 +12,6 @@ export const context = {
   sha: 'merge-sha',
   repo: { owner: 'octo', repo: 'app' },
   serverUrl: 'https://github.com',
-  runId: 42
+  runId: 42,
+  job: 'test'
 }

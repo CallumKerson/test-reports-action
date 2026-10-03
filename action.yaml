@@ -11,6 +11,12 @@ inputs:
     description: Token used to set commit statuses, which needs statuses write permission
     required: true
     default: ${{ github.token }}
+  retention-days:
+    description: >-
+      Days to keep the full summary for, which is uploaded as an artifact when
+      it is too big for the job summary
+    required: true
+    default: '7'
 
 runs:
   using: node24
