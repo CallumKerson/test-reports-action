@@ -23,7 +23,9 @@ aube's layout.
 - **Check**: `mise run check-all` - Runs all linters without fixing
 - **CI**: `mise run ci` - Runs `check-auto`, `typecheck` and `test`.
   `check-auto` checks all files on main or when a branch changes tooling
-  config, otherwise only the files the branch changed
+  config, otherwise only the files the branch changed.
+  `check-auto` and `test` write JUnit reports to `reports/`, which the CI
+  workflow then reports on with this action
 
 Run `mise run fix-all` and `mise run test` before committing.
 Linters are also wired to git hooks through `.config/hk.pkl`.
