@@ -46,7 +46,7 @@ run = "aube exec tsc --noEmit"
 [tasks.test]
 description = "Runs the unit tests with coverage"
 env = { NODE_OPTIONS = "--experimental-vm-modules", NODE_NO_WARNINGS = "1" }
-run = "aube exec jest"
+run = "aube exec jest --config .config/jest.config.js"
 
 [tasks.coverage]
 description = "Updates the coverage badge from the last test run"
@@ -57,7 +57,7 @@ run = "aube exec make-coverage-badge --output-path ./badges/coverage.svg"
 description = "Bundles the action into dist/"
 run = [
   "rm -rf dist",
-  "aube exec rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+  "aube exec rollup --config .config/rollup.config.ts --configPlugin @rollup/plugin-typescript",
 ]
 
 [tasks.local-action]

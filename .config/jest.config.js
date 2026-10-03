@@ -2,10 +2,12 @@
 
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
 export default {
+  // This config lives in .config/, so resolve paths from the repository root
+  rootDir: '..',
   clearMocks: true,
   collectCoverage: true,
-  collectCoverageFrom: ['./src/**'],
-  coverageDirectory: './coverage',
+  collectCoverageFrom: ['<rootDir>/src/**'],
+  coverageDirectory: '<rootDir>/coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/'],
   coverageReporters: ['json-summary', 'text', 'lcov'],
   // Uncomment the below lines if you would like to enforce a coverage threshold
@@ -31,7 +33,7 @@ export default {
     '^.+\\.ts$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.json',
+        tsconfig: '<rootDir>/tsconfig.json',
         useESM: true
       }
     ]
