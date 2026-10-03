@@ -8,14 +8,48 @@ An opinionated test reporter for GitHub Actions.
 
 ## Usage
 
+Write your test results to files the action recognises, then run it after your
+tests, even when they fail:
+
 ```yaml
+permissions:
+  contents: read
+  statuses: write
+
 steps:
+  - uses: actions/checkout@v5
+  - run: go test -json ./... > results.gotest.json
   - uses: CallumKerson/test-reports-action@v0
-    with:
-      milliseconds: 1000
+    if: ${{ !cancelled() }}
 ```
 
-See [`action.yaml`](./action.yaml) for the inputs and outputs.
+The action finds every report in the workspace, outside `node_modules`, with no
+paths to configure:
+
+| Format                       | File name       | Produced by                                   |
+| ---------------------------- | --------------- | --------------------------------------------- |
+| JUnit XML                    | `*.junit.xml`   | jest-junit, Maven Surefire, pytest and others |
+| [Go test JSON][go-test-json] | `*.gotest.json` | `go test -json ./... > results.gotest.json`   |
+
+For each report it sets a commit status named `Tests / <name>`, where the name
+is the file name without the format suffix, so `unit.junit.xml` becomes
+`Tests / unit`. When two reports would share a name, their directories are
+added to tell them apart. It also writes the results and the details of every
+failed test to the job summary.
+
+The step fails if any test failed, and only warns when it finds no reports.
+
+Setting commit statuses needs the `statuses: write` permission. Without it,
+for example on pull requests from forks, the action warns and still writes the
+summary.
+
+Go needs the `-json` flag: plain `go test` output can't be parsed.
+
+[go-test-json]: https://pkg.go.dev/cmd/test2json
+
+| Input   | Description                       | Default               |
+| ------- | --------------------------------- | --------------------- |
+| `token` | Token used to set commit statuses | `${{ github.token }}` |
 
 ## Development
 

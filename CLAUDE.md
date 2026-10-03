@@ -35,10 +35,18 @@ GitHub runs the committed `dist/index.js`, never `src/` directly.
 On `main`, `dist/` is the latest release's build, not a build of `main`.
 
 - `src/index.ts` - Entry point, which only calls `run()`
-- `src/main.ts` - `run()`, which reads inputs and sets outputs through
-  `@actions/core`
-- `__tests__/` - Jest tests, which mock `@actions/core` with the stubs in
-  `__fixtures__/`
+- `src/main.ts` - `run()`, which finds and parses the reports, writes the
+  summary, sets commit statuses and fails if any test failed
+- `src/discover.ts` - finds `**/*.junit.xml` and `**/*.gotest.json` in the
+  workspace and names each report
+- `src/junit.ts`, `src/gotest.ts` - parse each format into the `TestCase`
+  model in `src/report.ts`
+- `src/summary.ts`, `src/status.ts` - write the job summary and the
+  `Tests / <name>` commit statuses
+- `__tests__/` - Jest tests, which mock `@actions/core` and `@actions/github`
+  with the stubs in `__fixtures__/`
+- `__fixtures__/junit/*.xml`, `__fixtures__/gotest/*.jsonl` - sample reports,
+  named so the action doesn't find them when it runs on this repository
 
 ### Constraints that must not be broken
 
