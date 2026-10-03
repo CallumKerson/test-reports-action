@@ -1,0 +1,109 @@
+name: Main Build
+
+on:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+# One run at a time so release-please never races itself. A newer push replaces a
+# still-pending run, which loses nothing: release-please reads the whole history.
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install tooling
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - run: mise run ci
+
+  release-please:
+    runs-on: ubuntu-latest
+    needs: ci
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      major: ${{ steps.release.outputs.major }}
+      sha: ${{ steps.release.outputs.sha }}
+    steps:
+      # A personal token, so CI runs on the release PR; GITHUB_TOKEN pushes trigger no workflows
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
+        id: release
+        with:
+          config-file: .config/release-please-config.json
+          manifest-file: .config/release-please-manifest.json
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+
+  # dist/ on main is the latest release's build. It changes only through the release PR, so
+  # merging that PR ships the bundle together with the version bump and changelog.
+  release-pr-dist:
+    runs-on: ubuntu-latest
+    needs: release-please
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Find the release PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          branch=$(gh pr list --state open --label 'autorelease: pending' --json headRefName --jq '.[0].headRefName // empty')
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: ${{ steps.pr.outputs.branch != '' }}
+        with:
+          ref: ${{ steps.pr.outputs.branch }}
+          # Pushes with the personal token, so CI runs on the release PR again
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          persist-credentials: true
+      - name: Install tooling
+        if: ${{ steps.pr.outputs.branch != '' }}
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - if: ${{ steps.pr.outputs.branch != '' }}
+        run: mise run package
+      - name: Commit dist/ to the release PR
+        if: ${{ steps.pr.outputs.branch != '' }}
+        env:
+          BRANCH: ${{ steps.pr.outputs.branch }}
+        run: |
+          if [ -z "$(git status --porcelain dist/)" ]; then
+            echo "dist/ is already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/
+          git commit -m "build: update dist for release"
+          git push origin "HEAD:$BRANCH"
+
+  # Actions are used by major version, e.g. `@v1`, which release-please does not move
+  tag-major-version:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Pushes the tag
+          persist-credentials: true
+      - name: Move the major version tag
+        env:
+          MAJOR: ${{ needs.release-please.outputs.major }}
+          SHA: ${{ needs.release-please.outputs.sha }}
+        run: |
+          git tag --force "v$MAJOR" "$SHA"
+          git push --force origin "v$MAJOR"

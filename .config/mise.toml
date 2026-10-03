@@ -62,8 +62,8 @@ description = "Runs the action locally with inputs from .env"
 run = "aube exec local-action . src/main.ts .env"
 
 [tasks.all]
-description = "Fixes, tests and bundles everything, ready to commit"
-run = [{ task = "fix-all" }, { tasks = ["typecheck", "coverage"] }, { task = "package" }]
+description = "Fixes, type checks and tests everything, ready to commit"
+run = [{ task = "fix-all" }, { tasks = ["typecheck", "coverage"] }]
 
 [tasks.ci]
 description = "Runs all CI checks - lint, type check and test"
