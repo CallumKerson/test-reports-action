@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="com.example.CalculatorTest" time="0.051" tests="3" errors="1" skipped="1" failures="0">
+  <properties>
+    <property name="java.version" value="21"/>
+  </properties>
+  <testcase name="addsNumbers" classname="com.example.CalculatorTest" time="0.002"/>
+  <testcase name="dividesByZero" classname="com.example.CalculatorTest" time="0.004">
+    <error message="/ by zero" type="java.lang.ArithmeticException"><![CDATA[java.lang.ArithmeticException: / by zero
+	at com.example.Calculator.divide(Calculator.java:12)]]></error>
+    <system-out><![CDATA[dividing]]></system-out>
+  </testcase>
+  <testcase name="roundsNumbers" classname="com.example.CalculatorTest" time="0">
+    <skipped message="not implemented"/>
+  </testcase>
+</testsuite>
