@@ -1,23 +1,20 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: Test Reports
+description: An opinionated test reporter for GitHub Actions
+author: Callum Kerson
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: check-circle
+  color: green
 
-# Define your inputs here.
 inputs:
   milliseconds:
-    description: Your input description here
+    description: How long to wait, in milliseconds
     required: true
     default: '1000'
 
-# Define your outputs here.
 outputs:
   time:
-    description: Your output description here
+    description: The time the wait finished
 
 runs:
   using: node24
