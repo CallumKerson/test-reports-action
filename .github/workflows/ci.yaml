@@ -15,6 +15,9 @@ jobs:
   ci:
     name: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -22,22 +25,12 @@ jobs:
           persist-credentials: false
       - name: Install tooling
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-      - run: mise run ci
-
-  test-action:
-    name: test-action
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      # Committed dist/ is the last release's build, so test this branch's code instead
-      - name: Install tooling
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-      - run: mise run package
-      - run: mise run test
-      - name: Test local action
+      # Keep going when one check fails, so every check writes its report
+      - run: mise run --continue-on-error ci
+      # Committed dist/ is the last release's build, so report with this
+      # branch's code instead
+      - if: ${{ !cancelled() }}
+        run: mise run package
+      - name: Report hk and jest results with this action
+        if: ${{ !cancelled() }}
         uses: ./
