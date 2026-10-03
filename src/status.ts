@@ -1,0 +1,48 @@
+import * as core from '@actions/core'
+import * as github from '@actions/github'
+import { countResults, type TestReport } from './report.js'
+
+/**
+ * Sets a commit status for each report, linking back to this run.
+ */
+export async function setStatuses(
+  token: string,
+  reports: TestReport[]
+): Promise<void> {
+  const { context } = github
+  const octokit = github.getOctokit(token)
+  // On pull requests, context.sha is a merge commit that the PR never shows
+  const sha: string = context.payload.pull_request?.head.sha ?? context.sha
+  const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+
+  for (const report of reports) {
+    const counts = countResults(report.cases)
+    try {
+      await octokit.rest.repos.createCommitStatus({
+        ...context.repo,
+        sha,
+        state: counts.failed > 0 ? 'failure' : 'success',
+        context: `Tests / ${report.name}`,
+        description: describe(counts),
+        target_url: targetUrl
+      })
+    } catch (error) {
+      // A token without statuses: write, such as on a pull request from a
+      // fork, can't set any status, but the summary is still worth having
+      if ((error as { status?: number }).status === 403) {
+        core.warning(
+          'Could not set commit statuses: the token needs the statuses: write permission'
+        )
+        return
+      }
+      throw error
+    }
+  }
+}
+
+function describe(counts: ReturnType<typeof countResults>): string {
+  const parts = (['passed', 'failed', 'skipped'] as const)
+    .filter((status) => counts[status] > 0)
+    .map((status) => `${counts[status]} ${status}`)
+  return parts.length > 0 ? parts.join(', ') : 'No tests'
+}
