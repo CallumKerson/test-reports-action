@@ -1,0 +1,27 @@
+[global]
+exclude = [".git", "node_modules", "dist", "coverage", "CHANGELOG.md"]
+flavor = "gfm"
+
+# Unordered list style
+[MD004]
+style = "dash"
+
+[MD013]
+line-length = 80
+code-blocks = false
+tables = false
+
+# Ordered list item prefix
+[MD029]
+style = "one"
+
+# Spaces after list markers
+[MD030]
+ul-single = 1
+ol-single = 1
+ul-multi = 1
+ol-multi = 1
+
+# Code block style
+[MD046]
+style = "fenced"

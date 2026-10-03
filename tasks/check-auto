@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#MISE description="Checks everything on main, or only the files a branch changed"
+
+set -euo pipefail
+
+# A tool or linter config change can alter results for files the branch never
+# touched, so any of these forces a full check
+full_check_paths=(
+	.config/
+	.oxfmtrc.json
+	.oxlintrc.json
+	tsconfig.json
+)
+
+if [ "$(git branch --show-current)" = "main" ]; then
+	exec hk check --all --no-fail-fast
+fi
+
+git fetch --quiet origin main
+
+changed=$(git diff --name-only origin/main...HEAD -- "${full_check_paths[@]}")
+if [ -n "$changed" ]; then
+	echo "Tooling config changed, checking all files:"
+	echo "$changed"
+	exec hk check --all --no-fail-fast
+fi
+
+exec hk check --from-ref origin/main --to-ref HEAD --no-fail-fast

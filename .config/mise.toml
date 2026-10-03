@@ -1,6 +1,16 @@
 [tools]
+actionlint = "1.7.12"
+"aqua:owenlamont/ryl" = "0.22.0"
 aube = "2.3.0"
+hk = "2.4.0"
 node = "24.21.0"
+"npm:oxlint" = { depends = "aube", "version" = "1.86.0" }
+oxfmt = { depends = "aube", "version" = "0.71.0" }
+rumdl = "0.2.78"
+# actionlint runs shellcheck over workflow run: scripts
+shellcheck = "0.11.0"
+tombi = "1.7.1"
+typos = "1.50.3"
 
 [env]
 # rollup records the real path of each bundled file in dist/index.js.map, so a
@@ -8,13 +18,26 @@ node = "24.21.0"
 # aube's store paths
 AUBE_NODE_LINKER = "hoisted"
 
-[tasks.lint]
-description = "Lints the TypeScript sources"
-run = "aube exec eslint ."
+[task_config]
+includes = ["tasks"]
 
-[tasks.format-check]
-description = "Checks formatting"
-run = "aube exec prettier --check ."
+[tasks.check]
+run = "hk check --no-fail-fast"
+
+[tasks.check-pr]
+run = "hk check --from-ref origin/main --to-ref HEAD --no-fail-fast"
+
+[tasks.check-all]
+run = "hk check --all --no-fail-fast"
+
+[tasks.fix]
+run = "hk fix --no-fail-fast"
+
+[tasks.fix-pr]
+run = "hk fix --from-ref origin/main --to-ref HEAD --no-fail-fast"
+
+[tasks.fix-all]
+run = "hk fix --all --no-fail-fast"
 
 [tasks.typecheck]
 description = "Type checks the action source"
@@ -41,9 +64,13 @@ run = [
 description = "Runs the action locally with inputs from .env"
 run = "aube exec local-action . src/main.ts .env"
 
+[tasks.all]
+description = "Fixes, tests and bundles everything, ready to commit"
+run = [{ task = "fix-all" }, { tasks = ["typecheck", "coverage"] }, { task = "package" }]
+
 [tasks.ci]
-description = "Runs all CI checks - lint, format, type check and test"
-depends = ["lint", "format-check", "typecheck", "test"]
+description = "Runs all CI checks - lint, type check and test"
+depends = ["check-auto", "typecheck", "test"]
 
 [settings]
 # deps is experimental
