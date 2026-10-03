@@ -145,7 +145,6 @@ So, what are you waiting for? Go ahead and start customizing your action!
    event payload data used by your action. For more information, see the example
    file, [`.env.example`](./.env.example), and the
    [GitHub Actions Documentation](https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables).
-
 1. Commit your changes
 
    ```bash

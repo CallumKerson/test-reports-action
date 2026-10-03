@@ -1,0 +1,11 @@
+# Sort the [tools] table alphabetically. Ordering rules are only available on
+# schema-matched documents, so mise's schema has to be associated explicitly.
+[[schemas]]
+path = "https://mise.jdx.dev/schema/mise.json"
+include = ["mise.toml"]
+
+[[schemas.overrides]]
+targets = ["tools"]
+
+[schemas.overrides.format.rules]
+table-keys-order = "ascending"

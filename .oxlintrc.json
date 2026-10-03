@@ -1,0 +1,12 @@
+{
+  "plugins": ["typescript", "jest", "import", "node"],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "ignorePatterns": ["dist/**", "coverage/**"]
+}
