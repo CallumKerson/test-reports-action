@@ -13,9 +13,9 @@ tombi = "1.7.1"
 typos = "1.50.3"
 
 [env]
-# rollup records the real path of each bundled file in dist/index.js.map, so a
-# flat npm-style node_modules keeps it identical to an npm build and free of
-# aube's store paths
+# rolldown writes each bundled module's path into dist/index.js and its
+# sourcemap, so a flat npm-style node_modules keeps them identical to an npm
+# build and free of aube's store paths, which differ between machines
 AUBE_NODE_LINKER = "hoisted"
 
 [task_config]
@@ -55,10 +55,7 @@ run = "aube exec make-coverage-badge --output-path ./badges/coverage.svg"
 
 [tasks.package]
 description = "Bundles the action into dist/"
-run = [
-  "rm -rf dist",
-  "aube exec rollup --config .config/rollup.config.ts --configPlugin @rollup/plugin-typescript",
-]
+run = "aube exec tsdown"
 
 [tasks.local-action]
 description = "Runs the action locally with inputs from .env"

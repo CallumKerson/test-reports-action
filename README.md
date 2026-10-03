@@ -50,7 +50,7 @@ inputs there.
 
 Tool configuration lives in [`.config/`](./.config), except for files that
 their tools or editors only look for at the root: `tsconfig.json`,
-`.oxlintrc.json` and `.oxfmtrc.json`.
+`tsdown.config.ts`, `.oxlintrc.json` and `.oxfmtrc.json`.
 
 ## Releasing
 
