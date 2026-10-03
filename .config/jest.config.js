@@ -24,7 +24,14 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleFileExtensions: ['ts', 'js'],
   preset: 'ts-jest',
-  reporters: ['default'],
+  // CI runs this action on the JUnit report, to test it on real output
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      { outputDirectory: '<rootDir>/reports', outputName: 'jest.junit.xml' }
+    ]
+  ],
   resolver: 'ts-jest-resolver',
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
