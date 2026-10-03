@@ -1,0 +1,57 @@
+[tools]
+aube = "2.3.0"
+node = "24.21.0"
+
+[env]
+# rollup records the real path of each bundled file in dist/index.js.map, so a
+# flat npm-style node_modules keeps it identical to an npm build and free of
+# aube's store paths
+AUBE_NODE_LINKER = "hoisted"
+
+[tasks.lint]
+description = "Lints the TypeScript sources"
+run = "aube exec eslint ."
+
+[tasks.format-check]
+description = "Checks formatting"
+run = "aube exec prettier --check ."
+
+[tasks.typecheck]
+description = "Type checks the action source"
+run = "aube exec tsc --noEmit"
+
+[tasks.test]
+description = "Runs the unit tests with coverage"
+env = { NODE_OPTIONS = "--experimental-vm-modules", NODE_NO_WARNINGS = "1" }
+run = "aube exec jest"
+
+[tasks.coverage]
+description = "Updates the coverage badge from the last test run"
+depends = ["test"]
+run = "aube exec make-coverage-badge --output-path ./badges/coverage.svg"
+
+[tasks.package]
+description = "Bundles the action into dist/"
+run = [
+  "rm -rf dist",
+  "aube exec rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+]
+
+[tasks.local-action]
+description = "Runs the action locally with inputs from .env"
+run = "aube exec local-action . src/main.ts .env"
+
+[tasks.ci]
+description = "Runs all CI checks - lint, format, type check and test"
+depends = ["lint", "format-check", "typecheck", "test"]
+
+[settings]
+# deps is experimental
+experimental = true
+
+# Installs node modules before `mise run` whenever package.json or
+# package-lock.json change. aube reads and writes package-lock.json, which only
+# the npm provider recognises, so it runs aube in place of npm
+[deps.npm]
+auto = true
+run = "aube install --frozen-lockfile"
