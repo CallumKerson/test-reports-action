@@ -18,7 +18,6 @@
     // Each of these picks one of two equally good styles, and the code uses
     // the other one
     "capitalized-comments": "off", // wrapped comments continue in lower case
-    "func-style": "off", // functions are declared, not assigned
     "one-var": "off",
     "import/consistent-type-specifier-style": "off", // type imports are inline
 

@@ -18,17 +18,17 @@ interface Upload {
 }
 
 // Unzipped uploads are named after the file
-function fileName(base: string, attempt: number): string {
+const fileName = (base: string, attempt: number): string => {
   if (attempt === 1) {
     return `${base}.html`
   }
   return `${base}-${attempt}.html`
 }
 
-async function uploadAttempt(
+const uploadAttempt = async (
   { directory, base, content, retentionDays }: Upload,
   attempt: number
-): Promise<string> {
+): Promise<string> => {
   const file = path.join(directory, fileName(base, attempt))
   await writeFile(file, content)
   const { id } = await artifact.uploadArtifact(
@@ -42,10 +42,10 @@ async function uploadAttempt(
 
 // Each attempt depends on whether the name before it was taken, so they run
 // one after another
-async function upload(
+const upload = async (
   options: Upload,
   attempt: number
-): Promise<string | undefined> {
+): Promise<string | undefined> => {
   if (attempt > maxAttempts) {
     warning(
       `Could not upload the full summary: ${options.base}.html to ${options.base}-${maxAttempts}.html are all taken`
@@ -65,8 +65,8 @@ async function upload(
   }
 }
 
-function page(html: string): string {
-  return `<!doctype html>
+const page = (html: string): string =>
+  `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><title>Test results</title></head>
 <body>
@@ -74,17 +74,16 @@ ${html}
 </body>
 </html>
 `
-}
 
 /**
  * Uploads the full summary as a standalone HTML page.
  *
  * @returns A link to the artifact, or nothing if it could not be uploaded.
  */
-export async function uploadFullSummary(
+export const uploadFullSummary = async (
   html: string,
   retentionDays: number
-): Promise<string | undefined> {
+): Promise<string | undefined> => {
   const directory = await mkdtemp(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )

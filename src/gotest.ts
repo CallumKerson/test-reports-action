@@ -42,17 +42,17 @@ const statuses: Record<string, TestStatus> = {
 // already shown elsewhere
 const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/
 
-function getOrAdd<Value>(
+const getOrAdd = <Value>(
   map: Map<string, Value>,
   id: string,
   create: () => Value
-): Value {
+): Value => {
   const value = map.get(id) ?? create()
   map.set(id, value)
   return value
 }
 
-function applyEvent(test: Test, event: Event): void {
+const applyEvent = (test: Test, event: Event): void => {
   if (event.Action === 'output') {
     test.output.push(event.Output ?? '')
   } else if (event.Action && event.Action in statuses) {
@@ -61,7 +61,7 @@ function applyEvent(test: Test, event: Event): void {
   }
 }
 
-function applyPackageEvent(pkg: Package, event: Event): void {
+const applyPackageEvent = (pkg: Package, event: Event): void => {
   if (event.Action === 'output') {
     pkg.output.push(event.Output ?? '')
   } else if (event.Action === 'fail') {
@@ -71,11 +71,9 @@ function applyPackageEvent(pkg: Package, event: Event): void {
   }
 }
 
-function key(pkg: string, name: string): string {
-  return `${pkg}\0${name}`
-}
+const key = (pkg: string, name: string): string => `${pkg}\0${name}`
 
-function record({ tests, packages, builds }: Results, event: Event): void {
+const record = ({ tests, packages, builds }: Results, event: Event): void => {
   const { ImportPath: importPath, Package: pkg, Test: name } = event
   if (importPath) {
     if (event.Action === 'build-output') {
@@ -106,7 +104,7 @@ function record({ tests, packages, builds }: Results, event: Event): void {
   }
 }
 
-function collect(events: Event[]): Results {
+const collect = (events: Event[]): Results => {
   const results: Results = {
     builds: new Map(),
     packages: new Map(),
@@ -118,7 +116,7 @@ function collect(events: Event[]): Results {
   return results
 }
 
-function clean(output: string[]): string {
+const clean = (output: string[]): string => {
   const lines = output
     .join('')
     .split('\n')
@@ -129,10 +127,10 @@ function clean(output: string[]): string {
   return lines.map((line) => line.slice(indent).trimEnd()).join('\n')
 }
 
-function buildOutput(
+const buildOutput = (
   builds: Map<string, string[]>,
   failedBuild: string | undefined
-): string[] {
+): string[] => {
   if (failedBuild) {
     return builds.get(failedBuild) ?? []
   }
@@ -140,12 +138,12 @@ function buildOutput(
 }
 
 // A package can fail without a failing test, such as from a build error
-function packageFailures(
+const packageFailures = (
   packages: Map<string, Package>,
   builds: Map<string, string[]>,
   failedPackages: Set<string>
-): TestCase[] {
-  return [...packages]
+): TestCase[] =>
+  [...packages]
     .filter(([name, pkg]) => pkg.failed && !failedPackages.has(name))
     .map(([name, pkg]) => {
       const output = buildOutput(builds, pkg.failedBuild)
@@ -157,9 +155,8 @@ function packageFailures(
         suite: name
       }
     })
-}
 
-function parseJson(line: string): unknown {
+const parseJson = (line: string): unknown => {
   try {
     return JSON.parse(line)
   } catch {
@@ -167,25 +164,24 @@ function parseJson(line: string): unknown {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
-function text(value: unknown): string | undefined {
+const text = (value: unknown): string | undefined => {
   if (typeof value === 'string') {
     return value
   }
   return undefined
 }
 
-function numeric(value: unknown): number | undefined {
+const numeric = (value: unknown): number | undefined => {
   if (typeof value === 'number') {
     return value
   }
   return undefined
 }
 
-function parseEvent(line: string): Event | undefined {
+const parseEvent = (line: string): Event | undefined => {
   // Build errors go to stderr, which is sometimes redirected into the file
   if (!line.startsWith('{')) {
     return undefined
@@ -206,16 +202,16 @@ function parseEvent(line: string): Event | undefined {
 }
 
 // A test with no result was cut off, by a panic or a timeout
-function status(test: Test): TestStatus {
-  return test.status ?? 'failed'
-}
+const status = (test: Test): TestStatus => test.status ?? 'failed'
 
 // Collected in one pass, as comparing every test with every other is too slow
 // for packages with tens of thousands of subtests
-function findParents(all: Test[]): {
+const findParents = (
+  all: Test[]
+): {
   parents: Set<string>
   failedParents: Set<string>
-} {
+} => {
   const parents = new Set<string>()
   const failedParents = new Set<string>()
   for (const test of all) {
@@ -233,11 +229,11 @@ function findParents(all: Test[]): {
 
 // A parent test fails whenever a subtest does, so it is only worth reporting
 // when it failed on its own account
-function isReported(
+const isReported = (
   test: Test,
   parents: Set<string>,
   failedParents: Set<string>
-): boolean {
+): boolean => {
   const name = key(test.pkg, test.name)
   if (!parents.has(name)) {
     return true
@@ -245,7 +241,7 @@ function isReported(
   return status(test) === 'failed' && !failedParents.has(name)
 }
 
-function toCase(test: Test): TestCase {
+const toCase = (test: Test): TestCase => {
   const result: TestCase = {
     durationMs: test.elapsed * 1000,
     name: test.name,
@@ -268,7 +264,7 @@ function toCase(test: Test): TestCase {
  * that fails without a failing test, such as from a build error, becomes one
  * failed case named after the package.
  */
-export function parseGoTest(ndjson: string): TestCase[] {
+export const parseGoTest = (ndjson: string): TestCase[] => {
   const events = ndjson
     .split('\n')
     .map(parseEvent)
