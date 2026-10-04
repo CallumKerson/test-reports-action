@@ -65,6 +65,15 @@ describe('artifact.ts', () => {
     )
   })
 
+  it('Warns when the upload throws something other than an Error', async () => {
+    artifact.uploadArtifact.mockRejectedValue('Network down')
+
+    expect(await uploadFullSummary('<h2>Results</h2>', 7)).toBeUndefined()
+    expect(core.warning).toHaveBeenCalledWith(
+      'Could not upload the full summary: Network down'
+    )
+  })
+
   it('Gives up when every name is taken', async () => {
     artifact.uploadArtifact.mockRejectedValue(conflict)
 

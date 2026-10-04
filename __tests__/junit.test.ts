@@ -83,6 +83,12 @@ describe('junit.ts', () => {
     expect(parseJUnit(xml)).toEqual([])
   })
 
+  it('Parses a test case with no attributes', () => {
+    expect(parseJUnit('<testsuite name="s"><testcase/></testsuite>')).toEqual([
+      { suite: 's', name: '', status: 'passed', durationMs: 0 }
+    ])
+  })
+
   it('Leaves out the message of a failure with no details', () => {
     const [testCase] = parseJUnit(
       '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
