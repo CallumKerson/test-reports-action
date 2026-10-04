@@ -6,8 +6,10 @@ import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { warning } from '@actions/core'
 
-// Matrix jobs share a job name, so each leg after the first takes the next
-// free number
+/*
+ * Matrix jobs share a job name, so each leg after the first takes the next
+ * free number
+ */
 const maxAttempts = 50
 
 interface Upload {
@@ -40,8 +42,10 @@ const uploadAttempt = async (
   return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
 }
 
-// Each attempt depends on whether the name before it was taken, so they run
-// one after another
+/*
+ * Each attempt depends on whether the name before it was taken, so they run
+ * one after another
+ */
 const upload = async (
   options: Upload,
   attempt: number

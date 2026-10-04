@@ -40,8 +40,10 @@ const list = (value: unknown): unknown[] => {
 const isNode = (value: unknown): value is XmlNode =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-// The body usually holds the message and a stack trace, so only fall back
-// to the attributes when it is empty
+/*
+ * The body usually holds the message and a stack trace, so only fall back
+ * to the attributes when it is empty
+ */
 const describe = (problem: unknown): string => {
   if (typeof problem === 'string') {
     return problem.trim()
@@ -95,8 +97,10 @@ const parseCase = (testCase: XmlNode, suiteName: string): TestCase => {
   }
 }
 
-// An element with no attributes or children parses as an empty string, which
-// is still an element, just one with nothing in it
+/*
+ * An element with no attributes or children parses as an empty string, which
+ * is still an element, just one with nothing in it
+ */
 const asNode = (item: unknown): XmlNode => {
   if (isNode(item)) {
     return item
@@ -130,8 +134,10 @@ export const parseJUnit = (xml: string): TestCase[] => {
   if (!isNode(document)) {
     throw new Error('not a JUnit report: no elements')
   }
-  // jest-junit and others write a <testsuites> with no suites in it when no
-  // tests ran
+  /*
+   * Reporters such as jest-junit write a <testsuites> with no suites in it
+   * when no tests ran
+   */
   if ('testsuites' in document) {
     return parseSuites(document.testsuites)
   }

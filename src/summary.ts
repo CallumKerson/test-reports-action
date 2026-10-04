@@ -51,8 +51,10 @@ const formatDuration = (ms: number): string => {
   return `${Math.floor(seconds / secondsPerMinute)}m ${seconds % secondsPerMinute}s`
 }
 
-// When everything passed, a row per test would be long and say nothing more
-// than a row per suite
+/*
+ * When everything passed, a row per test would be long and say nothing more
+ * than a row per suite
+ */
 const renderSuites = (cases: TestCase[]): string[] => {
   const suites = new Map<string, TestCase[]>()
   for (const testCase of cases) {
@@ -87,9 +89,11 @@ const truncate = (message: string, limited: boolean): string => {
   return [...lines.slice(0, maxLines), `…${hidden} more lines`].join('\n')
 }
 
-// The blank line before <pre> starts a new HTML block in GitHub's Markdown,
-// which only ends at </pre>, so blank lines in the message don't end it early
-// and turn the rest of the message into Markdown
+/*
+ * The blank line before <pre> starts a new HTML block in GitHub's Markdown,
+ * which only ends at </pre>, so blank lines in the message don't end it early
+ * and turn the rest of the message into Markdown
+ */
 const renderMessage = (
   message: string | undefined,
   limited: boolean

@@ -38,8 +38,10 @@ const statuses: Record<string, TestStatus> = {
   skip: 'skipped'
 }
 
-// go test prints these around each test's own output, and the status is
-// already shown elsewhere
+/*
+ * The go test command prints these around each test's own output, and the
+ * status is already shown elsewhere
+ */
 const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/
 
 const getOrAdd = <Value>(
@@ -205,8 +207,10 @@ const parseEvent = (line: string): Event | null => {
 // A test with no result was cut off, by a panic or a timeout
 const status = (test: Test): TestStatus => test.status ?? 'failed'
 
-// Collected in one pass, as comparing every test with every other is too slow
-// for packages with tens of thousands of subtests
+/*
+ * Collected in one pass, as comparing every test with every other is too slow
+ * for packages with tens of thousands of subtests
+ */
 const findParents = (
   all: Test[]
 ): {
@@ -228,8 +232,10 @@ const findParents = (
   return { failedParents, parents }
 }
 
-// A parent test fails whenever a subtest does, so it is only worth reporting
-// when it failed on its own account
+/*
+ * A parent test fails whenever a subtest does, so it is only worth reporting
+ * when it failed on its own account
+ */
 const isReported = (
   test: Test,
   parents: Set<string>,
