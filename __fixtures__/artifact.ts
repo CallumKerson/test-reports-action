@@ -1,7 +1,7 @@
 import type { UploadArtifactResponse } from '@actions/artifact'
 import { vi } from 'vitest'
 
-export const uploadArtifact =
+const uploadArtifact =
   vi.fn<
     (
       name: string,
@@ -13,4 +13,5 @@ export const uploadArtifact =
 
 const artifact = { uploadArtifact }
 
+export { uploadArtifact }
 export default artifact

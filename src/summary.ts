@@ -8,7 +8,7 @@ import {
 } from './report.js'
 
 // GitHub rejects a step summary over 1 MiB
-export const maxSummaryBytes = 1024 * 1024
+const maxSummaryBytes = 1024 * 1024
 const maxFailures = 50
 const maxLines = 50
 
@@ -20,7 +20,7 @@ const ansiEscape = /\u001b\[[0-?]*[ -/]*[@-~]/g
  * How much of each report to show: everything, a limited amount of each
  * failure, or none, leaving only each report's counts.
  */
-export type Detail = 'full' | 'limited' | 'none'
+type Detail = 'full' | 'limited' | 'none'
 
 function fits(html: string): boolean {
   return Buffer.byteLength(html) < maxSummaryBytes
@@ -38,7 +38,7 @@ function escape(text: string): string {
 }
 
 // Each unit is chosen after rounding, so 59.96s shows as 1m 0s, not 60.0s
-export function formatDuration(ms: number): string {
+function formatDuration(ms: number): string {
   if (Math.round(ms) < 1000) {
     return `${Math.round(ms)}ms`
   }
@@ -170,3 +170,6 @@ export async function writeSummary(
     : `${renderSummary(reports, 'none')}\n${note}`
   await summary.addRaw(shown, true).write()
 }
+
+export { formatDuration, maxSummaryBytes }
+export type { Detail }

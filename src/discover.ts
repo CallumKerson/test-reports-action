@@ -4,16 +4,6 @@ import { parseGoTest } from './gotest.js'
 import { parseJUnit } from './junit.js'
 import type { TestCase } from './report.js'
 
-export interface ReportFile {
-  /** Absolute path, for reading the file */
-  file: string
-  /** Path relative to the workspace, for showing to people */
-  path: string
-  /** Unique name, used for the commit status */
-  name: string
-  parse: (content: string) => TestCase[]
-}
-
 const formats = [
   { suffix: '.junit.xml', parse: parseJUnit },
   { suffix: '.gotest.json', parse: parseGoTest }
@@ -42,6 +32,16 @@ function uniqueName(
   // Only reports in the same directory with the same name but different
   // formats get here
   return relative
+}
+
+export interface ReportFile {
+  /** Absolute path, for reading the file */
+  file: string
+  /** Path relative to the workspace, for showing to people */
+  path: string
+  /** Unique name, used for the commit status */
+  name: string
+  parse: (content: string) => TestCase[]
 }
 
 /**
