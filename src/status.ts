@@ -1,5 +1,5 @@
-import * as core from '@actions/core'
-import * as github from '@actions/github'
+import { warning } from '@actions/core'
+import { context, getOctokit } from '@actions/github'
 import { countResults, describeCounts, type TestReport } from './report.js'
 
 /**
@@ -13,8 +13,7 @@ export async function setStatuses(
   reports: TestReport[],
   jobName: string
 ): Promise<void> {
-  const { context } = github
-  const octokit = github.getOctokit(token)
+  const octokit = getOctokit(token)
   // On pull requests, context.sha is a merge commit that the PR never shows,
   // and on workflow_run it is the latest commit on the default branch
   const sha: string =
@@ -47,7 +46,7 @@ export async function setStatuses(
       'status' in error &&
       error.status === 403
     ) {
-      core.warning(
+      warning(
         'Could not set commit statuses: the token needs the statuses: write permission'
       )
       return

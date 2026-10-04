@@ -1,4 +1,10 @@
-import * as core from '@actions/core'
+import {
+  error as logError,
+  getInput,
+  info,
+  setFailed,
+  warning
+} from '@actions/core'
 import { readFile } from 'node:fs/promises'
 import { findReports, type ReportFile } from './discover.js'
 import { countResults, type TestReport } from './report.js'
@@ -17,19 +23,19 @@ export async function run(): Promise<void> {
     // Tests often don't run because an earlier step failed, and that step
     // already shows why
     if (files.length === 0) {
-      core.warning(
+      warning(
         'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
       )
       return
     }
 
-    const retentionDays = parseRetentionDays(core.getInput('retention-days'))
+    const retentionDays = parseRetentionDays(getInput('retention-days'))
     const reports = await Promise.all(files.map(readReport))
     await writeSummary(reports, retentionDays)
     await setStatuses(
-      core.getInput('token', { required: true }),
+      getInput('token', { required: true }),
       reports,
-      jobName(core.getInput('name'), core.getInput('matrix'))
+      jobName(getInput('name'), getInput('matrix'))
     )
 
     // A report that can't be parsed is a failed test in the summary and its
@@ -44,18 +50,18 @@ export async function run(): Promise<void> {
         `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
     ].filter(Boolean)
     if (problems.length > 0) {
-      core.setFailed(problems.join(' and '))
+      setFailed(problems.join(' and '))
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {
-      core.setFailed(error.message)
+      setFailed(error.message)
     }
   }
 }
 
 async function readReport(file: ReportFile): Promise<TestReport> {
-  core.info(`Reading ${file.path}`)
+  info(`Reading ${file.path}`)
   const content = await readFile(file.file, 'utf8')
   try {
     return { name: file.name, path: file.path, cases: file.parse(content) }
@@ -63,7 +69,7 @@ async function readReport(file: ReportFile): Promise<TestReport> {
     // One broken report shouldn't hide the results of all the others, so it
     // becomes a failed test of its own
     const message = error instanceof Error ? error.message : String(error)
-    core.error(`Could not parse ${file.path}: ${message}`)
+    logError(`Could not parse ${file.path}: ${message}`)
     return {
       name: file.name,
       path: file.path,

@@ -5,7 +5,7 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import * as core from '../__fixtures__/core.js'
+import { error, getInput, setFailed, warning } from '../__fixtures__/core.js'
 import type { ReportFile } from '../src/discover.js'
 import type { TestReport } from '../src/report.js'
 import { run } from '../src/main.js'
@@ -36,7 +36,7 @@ describe('main.ts', () => {
     const workspace = await mkdtemp(path.join(tmpdir(), 'main-'))
     onTestFinished(async () => rm(workspace, { recursive: true, force: true }))
     vi.stubEnv('GITHUB_WORKSPACE', workspace)
-    core.getInput.mockImplementation(
+    getInput.mockImplementation(
       (name) =>
         ({ token: 'token', 'retention-days': '7', ...inputs })[name] ?? ''
     )
@@ -76,9 +76,9 @@ describe('main.ts', () => {
       }
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
-    expect(core.getInput).toHaveBeenCalledWith('token', { required: true })
+    expect(getInput).toHaveBeenCalledWith('token', { required: true })
     expect(setStatuses).toHaveBeenCalledWith('token', reports, '')
-    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(setFailed).not.toHaveBeenCalled()
   })
 
   it('fails when any test failed', async () => {
@@ -101,7 +101,7 @@ describe('main.ts', () => {
     await run()
 
     expect(setStatuses).toHaveBeenCalledWith('token', expect.any(Array), '')
-    expect(core.setFailed).toHaveBeenCalledWith('2 tests failed')
+    expect(setFailed).toHaveBeenCalledWith('2 tests failed')
   })
 
   it('says one test failed', async () => {
@@ -118,7 +118,7 @@ describe('main.ts', () => {
 
     await run()
 
-    expect(core.setFailed).toHaveBeenCalledWith('1 test failed')
+    expect(setFailed).toHaveBeenCalledWith('1 test failed')
   })
 
   it('warns and passes when there are no reports', async () => {
@@ -128,12 +128,12 @@ describe('main.ts', () => {
 
     await run()
 
-    expect(core.warning).toHaveBeenCalledWith(
+    expect(warning).toHaveBeenCalledWith(
       expect.stringContaining('No test reports found')
     )
     expect(writeSummary).not.toHaveBeenCalled()
     expect(setStatuses).not.toHaveBeenCalled()
-    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(setFailed).not.toHaveBeenCalled()
   })
 
   it('reports a report that cannot be parsed as a failed test', async () => {
@@ -151,7 +151,7 @@ describe('main.ts', () => {
 
     await run()
 
-    expect(core.error).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       'Could not parse bad.junit.xml: not a JUnit report: no <testsuite> element'
     )
     const reports = [
@@ -177,7 +177,7 @@ describe('main.ts', () => {
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
     expect(setStatuses).toHaveBeenCalledWith('token', reports, '')
-    expect(core.setFailed).toHaveBeenCalledWith('1 report could not be parsed')
+    expect(setFailed).toHaveBeenCalledWith('1 report could not be parsed')
   })
 
   it('fails naming both failed tests and unparsable reports', async () => {
@@ -196,7 +196,7 @@ describe('main.ts', () => {
 
     await run()
 
-    expect(core.setFailed).toHaveBeenCalledWith(
+    expect(setFailed).toHaveBeenCalledWith(
       '1 test failed and 2 reports could not be parsed'
     )
   })
@@ -255,7 +255,7 @@ describe('main.ts', () => {
 
       await run()
 
-      expect(core.setFailed).toHaveBeenCalledWith(
+      expect(setFailed).toHaveBeenCalledWith(
         `retention-days must be a whole number of days, at least 1, not '${days}'`
       )
       expect(writeSummary).not.toHaveBeenCalled()

@@ -1,6 +1,10 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import * as core from '../__fixtures__/core.js'
-import * as github from '../__fixtures__/github.js'
+import { warning } from '../__fixtures__/core.js'
+import {
+  context,
+  createCommitStatus,
+  getOctokit
+} from '../__fixtures__/github.js'
 import type { TestCase, TestReport } from '../src/report.js'
 import { setStatuses } from '../src/status.js'
 
@@ -25,10 +29,10 @@ const report = (name: string, cases: TestCase[]): TestReport => ({
   cases
 })
 
-const triggeredBy = (payload: typeof github.context.payload): void => {
-  github.context.payload = payload
+const triggeredBy = (payload: typeof context.payload): void => {
+  context.payload = payload
   onTestFinished(() => {
-    github.context.payload = {}
+    context.payload = {}
   })
 }
 
@@ -50,14 +54,14 @@ describe('status.ts', () => {
       ''
     )
 
-    expect(github.getOctokit).toHaveBeenCalledWith('token')
+    expect(getOctokit).toHaveBeenCalledWith('token')
     const common = {
       owner: 'octo',
       repo: 'app',
       sha: 'merge-sha',
       target_url: 'https://github.com/octo/app/actions/runs/42'
     }
-    expect(github.createCommitStatus.mock.calls).toStrictEqual([
+    expect(createCommitStatus.mock.calls).toStrictEqual([
       [
         {
           ...common,
@@ -92,7 +96,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('unit', [])], '')
 
-    expect(github.createCommitStatus).toHaveBeenCalledWith(
+    expect(createCommitStatus).toHaveBeenCalledWith(
       expect.objectContaining({ sha: 'head-sha' })
     )
   })
@@ -104,7 +108,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('unit', [])], '')
 
-    expect(github.createCommitStatus).toHaveBeenCalledWith(
+    expect(createCommitStatus).toHaveBeenCalledWith(
       expect.objectContaining({ sha: 'run-sha' })
     )
   })
@@ -114,7 +118,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('unit', [])], 'ubuntu-latest, 24')
 
-    expect(github.createCommitStatus).toHaveBeenCalledWith(
+    expect(createCommitStatus).toHaveBeenCalledWith(
       expect.objectContaining({ context: 'Tests (ubuntu-latest, 24) / unit' })
     )
   })
@@ -122,7 +126,7 @@ describe('status.ts', () => {
   it('warns once when the token cannot set statuses', async () => {
     expect.hasAssertions()
 
-    github.createCommitStatus.mockRejectedValue(
+    createCommitStatus.mockRejectedValue(
       Object.assign(new Error('Resource not accessible by integration'), {
         status: 403
       })
@@ -130,7 +134,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('a', []), report('b', [])], '')
 
-    expect(core.warning).toHaveBeenCalledExactlyOnceWith(
+    expect(warning).toHaveBeenCalledExactlyOnceWith(
       expect.stringContaining('statuses: write')
     )
   })
@@ -138,7 +142,7 @@ describe('status.ts', () => {
   it('throws other errors', async () => {
     expect.hasAssertions()
 
-    github.createCommitStatus.mockRejectedValue(
+    createCommitStatus.mockRejectedValue(
       Object.assign(new Error('Server Error'), { status: 500 })
     )
 

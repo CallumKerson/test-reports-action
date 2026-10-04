@@ -1,6 +1,6 @@
 import artifact from '@actions/artifact'
-import * as core from '@actions/core'
-import * as github from '@actions/github'
+import { warning } from '@actions/core'
+import { context } from '@actions/github'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -21,7 +21,7 @@ export async function uploadFullSummary(
   const directory = await mkdtemp(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )
-  const base = `test-results-${github.context.job}`
+  const base = `test-results-${context.job}`
   return upload(directory, base, page(html), retentionDays, 1)
 }
 
@@ -35,13 +35,12 @@ async function upload(
   attempt: number
 ): Promise<string | undefined> {
   if (attempt > maxAttempts) {
-    core.warning(
+    warning(
       `Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`
     )
     return undefined
   }
 
-  const { context } = github
   // Unzipped uploads are named after the file
   const file = path.join(
     directory,
@@ -61,7 +60,7 @@ async function upload(
     if (/\(409\)/.test(message)) {
       return upload(directory, base, content, retentionDays, attempt + 1)
     }
-    core.warning(`Could not upload the full summary: ${message}`)
+    warning(`Could not upload the full summary: ${message}`)
     return undefined
   }
 }

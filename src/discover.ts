@@ -1,4 +1,4 @@
-import * as glob from '@actions/glob'
+import { create as createGlobber } from '@actions/glob'
 import path from 'node:path'
 import { parseGoTest } from './gotest.js'
 import { parseJUnit } from './junit.js'
@@ -27,7 +27,7 @@ export async function findReports(workspace: string): Promise<ReportFile[]> {
     ...formats.map(({ suffix }) => path.join(workspace, `**/*${suffix}`)),
     `!${path.join(workspace, '**/node_modules/**')}`
   ]
-  const globber = await glob.create(patterns.join('\n'), {
+  const globber = await createGlobber(patterns.join('\n'), {
     followSymbolicLinks: false,
     matchDirectories: false
   })

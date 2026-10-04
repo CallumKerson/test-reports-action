@@ -1,4 +1,4 @@
-import * as core from '@actions/core'
+import { summary } from '@actions/core'
 import { uploadFullSummary } from './artifact.js'
 import {
   countResults,
@@ -34,7 +34,7 @@ export async function writeSummary(
 ): Promise<void> {
   const full = renderSummary(reports, 'full')
   if (fits(full)) {
-    await core.summary.addRaw(full, true).write()
+    await summary.addRaw(full, true).write()
     return
   }
 
@@ -44,10 +44,10 @@ export async function writeSummary(
     : "<p>⚠️ Cut short to fit GitHub's 1 MiB limit.</p>"
   // Many failing reports can be too big even when each one is cut short
   const limited = `${renderSummary(reports, 'limited')}\n${note}`
-  const summary = fits(limited)
+  const shown = fits(limited)
     ? limited
     : `${renderSummary(reports, 'none')}\n${note}`
-  await core.summary.addRaw(summary, true).write()
+  await summary.addRaw(shown, true).write()
 }
 
 function fits(html: string): boolean {

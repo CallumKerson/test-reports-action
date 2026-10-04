@@ -2,8 +2,8 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import * as artifact from '../__fixtures__/artifact.js'
-import * as core from '../__fixtures__/core.js'
+import { uploadArtifact } from '../__fixtures__/artifact.js'
+import { warning } from '../__fixtures__/core.js'
 import { uploadFullSummary } from '../src/artifact.js'
 
 vi.mock(
@@ -34,7 +34,7 @@ describe('artifact.ts', () => {
     expect.hasAssertions()
 
     await runnerTemp()
-    artifact.uploadArtifact.mockImplementation(async (name, [file]) => {
+    uploadArtifact.mockImplementation(async (name, [file]) => {
       await expect(readFile(file, 'utf8')).resolves.toContain(
         '<title>Test results</title></head>\n<body>\n<h2>Results</h2>\n</body>'
       )
@@ -44,7 +44,7 @@ describe('artifact.ts', () => {
     const url = await uploadFullSummary('<h2>Results</h2>', 3)
 
     expect(url).toBe('https://github.com/octo/app/actions/runs/42/artifacts/7')
-    const [[name, [file], root, options]] = artifact.uploadArtifact.mock.calls
+    const [[name, [file], root, options]] = uploadArtifact.mock.calls
     expect(name).toBe('test-results-test.html')
     expect(path.basename(file)).toBe(name)
     expect(root).toBe(path.dirname(file))
@@ -55,7 +55,7 @@ describe('artifact.ts', () => {
     expect.hasAssertions()
 
     await runnerTemp()
-    artifact.uploadArtifact
+    uploadArtifact
       .mockRejectedValueOnce(conflict)
       .mockRejectedValueOnce(conflict)
       .mockResolvedValue({ id: 9 })
@@ -63,9 +63,7 @@ describe('artifact.ts', () => {
     const url = await uploadFullSummary('<h2>Results</h2>', 7)
 
     expect(url).toBe('https://github.com/octo/app/actions/runs/42/artifacts/9')
-    expect(
-      artifact.uploadArtifact.mock.calls.map(([name]) => name)
-    ).toStrictEqual([
+    expect(uploadArtifact.mock.calls.map(([name]) => name)).toStrictEqual([
       'test-results-test.html',
       'test-results-test-2.html',
       'test-results-test-3.html'
@@ -76,12 +74,12 @@ describe('artifact.ts', () => {
     expect.hasAssertions()
 
     await runnerTemp()
-    artifact.uploadArtifact.mockRejectedValue(new Error('Network down'))
+    uploadArtifact.mockRejectedValue(new Error('Network down'))
 
     await expect(
       uploadFullSummary('<h2>Results</h2>', 7)
     ).resolves.toBeUndefined()
-    expect(core.warning).toHaveBeenCalledWith(
+    expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
   })
@@ -90,12 +88,12 @@ describe('artifact.ts', () => {
     expect.hasAssertions()
 
     await runnerTemp()
-    artifact.uploadArtifact.mockRejectedValue('Network down')
+    uploadArtifact.mockRejectedValue('Network down')
 
     await expect(
       uploadFullSummary('<h2>Results</h2>', 7)
     ).resolves.toBeUndefined()
-    expect(core.warning).toHaveBeenCalledWith(
+    expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
   })
@@ -104,13 +102,13 @@ describe('artifact.ts', () => {
     expect.hasAssertions()
 
     await runnerTemp()
-    artifact.uploadArtifact.mockRejectedValue(conflict)
+    uploadArtifact.mockRejectedValue(conflict)
 
     await expect(
       uploadFullSummary('<h2>Results</h2>', 7)
     ).resolves.toBeUndefined()
-    expect(artifact.uploadArtifact).toHaveBeenCalledTimes(50)
-    expect(core.warning).toHaveBeenCalledWith(
+    expect(uploadArtifact).toHaveBeenCalledTimes(50)
+    expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: test-results-test.html to test-results-test-50.html are all taken'
     )
   })
