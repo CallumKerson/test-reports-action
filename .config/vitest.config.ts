@@ -7,7 +7,7 @@ export default defineConfig({
     coverage: {
       enabled: true,
       include: ['src/**'],
-      // make-coverage-badge reads coverage/coverage-summary.json
+      // The coverage badge is made from coverage/coverage-summary.json
       reporter: ['json-summary', 'text', 'lcov']
     },
     include: ['__tests__/**/*.test.ts'],

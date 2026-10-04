@@ -9,8 +9,10 @@ const formats = [
   { parse: parseGoTest, suffix: '.gotest.json' }
 ]
 
-// Commit statuses are keyed by name, so a name shared by two reports would
-// have one overwrite the other
+/*
+ * Commit statuses are keyed by name, so a name shared by two reports would
+ * have one overwrite the other
+ */
 const uniqueName = (
   relative: string,
   suffix: string,
@@ -29,8 +31,10 @@ const uniqueName = (
       return name
     }
   }
-  // Only reports in the same directory with the same name but different
-  // formats get here
+  /*
+   * Only reports in the same directory with the same name but different
+   * formats get here
+   */
   return relative
 }
 

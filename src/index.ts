@@ -5,8 +5,10 @@
 import { run } from './main.js'
 import { setFailed } from '@actions/core'
 
-// run() reports its own errors, so this only fails the step on anything it
-// lets through
+/*
+ * As run() reports its own errors, this only fails the step on anything it
+ * lets through
+ */
 /* istanbul ignore next */
 run().catch((error: unknown) => {
   setFailed(String(error))

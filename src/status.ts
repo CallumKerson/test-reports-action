@@ -35,8 +35,10 @@ export const setStatuses = async (
   jobName: string
 ): Promise<void> => {
   const octokit = getOctokit(token)
-  // On pull requests, context.sha is a merge commit that the PR never shows,
-  // and on workflow_run it is the latest commit on the default branch
+  /*
+   * On pull requests, context.sha is a merge commit that the PR never shows,
+   * and on workflow_run it is the latest commit on the default branch
+   */
   const sha: string =
     context.payload.pull_request?.head.sha ??
     context.payload.workflow_run?.head_sha ??
@@ -59,8 +61,10 @@ export const setStatuses = async (
       })
     )
   } catch (error) {
-    // A token without statuses: write, such as on a pull request from a
-    // fork, can't set any status, but the summary is still worth having
+    /*
+     * A token without statuses: write, such as on a pull request from a
+     * fork, can't set any status, but the summary is still worth having
+     */
     if (
       typeof error === 'object' &&
       error !== null &&

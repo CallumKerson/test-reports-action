@@ -88,3 +88,5 @@ YAML files use the `.yaml` extension.
 - Prefer direct functions; classes are for data, or where a function would be
   much more complicated
 - Comments explain why a thing is the way it is, not what the line does
+- Comments over more than one line are `/* */` blocks, as oxlint's
+  `capitalized-comments` wants every `//` line to start with a capital

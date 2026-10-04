@@ -17,7 +17,6 @@
   "rules": {
     // Each of these picks one of two equally good styles, and the code uses
     // the other one
-    "capitalized-comments": "off", // wrapped comments continue in lower case
     "one-var": "off",
 
     // no-duplicate-imports wants one import from each module, so types are

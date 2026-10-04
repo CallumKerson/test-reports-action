@@ -12,8 +12,10 @@ import { readFile } from 'node:fs/promises'
 import { setStatuses } from './status.js'
 import { writeSummary } from './summary.js'
 
-// A report that can't be parsed is a failed test in the summary and its
-// status, but it isn't a test that failed
+/*
+ * A report that can't be parsed is a failed test in the summary and its
+ * status, but it isn't a test that failed
+ */
 const failOnProblems = (reports: TestReport[]): void => {
   const unparsable = reports.filter((report) => report.parseError).length
   const failed = reports
@@ -34,8 +36,10 @@ const readReport = async (file: ReportFile): Promise<TestReport> => {
   try {
     return { cases: file.parse(content), name: file.name, path: file.path }
   } catch (error) {
-    // One broken report shouldn't hide the results of all the others, so it
-    // becomes a failed test of its own
+    /*
+     * One broken report shouldn't hide the results of all the others, so it
+     * becomes a failed test of its own
+     */
     const message = errorMessage(error)
     logError(`Could not parse ${file.path}: ${message}`)
     return {
@@ -62,8 +66,10 @@ const matrixValue = (value: unknown): string => {
   return JSON.stringify(value)
 }
 
-// Each job in a matrix finds reports with the same names, so without a name of
-// their own they would overwrite each other's statuses
+/*
+ * Each job in a matrix finds reports with the same names, so without a name of
+ * their own they would overwrite each other's statuses
+ */
 const jobName = (name: string, matrix: string): string => {
   if (name) {
     return name
@@ -75,8 +81,10 @@ const jobName = (name: string, matrix: string): string => {
     }
     return Object.values(values).map(matrixValue).join(', ')
   } catch {
-    // Outside of Actions, such as with local-action, the default is left as
-    // an unevaluated expression
+    /*
+     * Outside of Actions, such as with local-action, the default is left as
+     * an unevaluated expression
+     */
     return ''
   }
 }
@@ -94,8 +102,10 @@ const parseRetentionDays = (input: string): number => {
 const reportResults = async (): Promise<void> => {
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
   const files = await findReports(workspace)
-  // Tests often don't run because an earlier step failed, and that step
-  // already shows why
+  /*
+   * Tests often don't run because an earlier step failed, and that step
+   * already shows why
+   */
   if (files.length === 0) {
     warning(
       'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
