@@ -1,13 +1,13 @@
-import { jest } from '@jest/globals'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readFile, rm } from 'node:fs/promises'
 import path from 'node:path'
 import * as artifact from '../__fixtures__/artifact.js'
 import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 
-jest.unstable_mockModule('@actions/artifact', () => artifact)
-jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('@actions/github', () => github)
+vi.doMock('@actions/artifact', () => artifact)
+vi.doMock('@actions/core', () => core)
+vi.doMock('@actions/github', () => github)
 
 const { uploadFullSummary } = await import('../src/artifact.js')
 

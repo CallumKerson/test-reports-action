@@ -1,7 +1,7 @@
 /**
  * Unit tests for the action's main functionality, src/main.ts
  */
-import { jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -9,19 +9,19 @@ import * as core from '../__fixtures__/core.js'
 import type { ReportFile } from '../src/discover.js'
 import type { TestReport } from '../src/report.js'
 
-const findReports = jest.fn<(workspace: string) => Promise<ReportFile[]>>()
+const findReports = vi.fn<(workspace: string) => Promise<ReportFile[]>>()
 const setStatuses =
-  jest.fn<
+  vi.fn<
     (token: string, reports: TestReport[], jobName: string) => Promise<void>
   >()
 const writeSummary =
-  jest.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
+  vi.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
 
 // Mocks should be declared before the module being tested is imported.
-jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('../src/discover.js', () => ({ findReports }))
-jest.unstable_mockModule('../src/status.js', () => ({ setStatuses }))
-jest.unstable_mockModule('../src/summary.js', () => ({ writeSummary }))
+vi.doMock('@actions/core', () => core)
+vi.doMock('../src/discover.js', () => ({ findReports }))
+vi.doMock('../src/status.js', () => ({ setStatuses }))
+vi.doMock('../src/summary.js', () => ({ writeSummary }))
 
 const { run } = await import('../src/main.js')
 const { parseJUnit } = await import('../src/junit.js')

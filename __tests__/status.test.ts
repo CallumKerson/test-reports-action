@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 import type { TestCase, TestReport } from '../src/report.js'
 
-jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('@actions/github', () => github)
+vi.doMock('@actions/core', () => core)
+vi.doMock('@actions/github', () => github)
 
 const { setStatuses } = await import('../src/status.js')
 

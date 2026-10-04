@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { countResults } from '../src/report.js'
 
 describe('report.ts', () => {

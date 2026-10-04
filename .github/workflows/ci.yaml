@@ -33,7 +33,7 @@ jobs:
       # committed dist/
       - if: ${{ !cancelled() }}
         run: mise run package
-      - name: Report hk and jest results with this action
+      - name: Report hk and vitest results with this action
         if: ${{ !cancelled() }}
         uses: ./ # zizmor: ignore[self-repository]
 

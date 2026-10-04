@@ -1,8 +1,8 @@
 import type { UploadArtifactResponse } from '@actions/artifact'
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 
 export const uploadArtifact =
-  jest.fn<
+  vi.fn<
     (
       name: string,
       files: string[],

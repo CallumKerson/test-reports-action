@@ -1,5 +1,5 @@
 {
-  "plugins": ["typescript", "jest", "import", "node"],
+  "plugins": ["typescript", "vitest", "import", "node"],
   "env": {
     "node": true,
     "es2022": true

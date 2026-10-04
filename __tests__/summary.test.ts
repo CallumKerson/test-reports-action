@@ -1,14 +1,12 @@
-import { jest } from '@jest/globals'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import type { TestCase, TestReport } from '../src/report.js'
 
 const uploadFullSummary =
-  jest.fn<
-    (html: string, retentionDays: number) => Promise<string | undefined>
-  >()
+  vi.fn<(html: string, retentionDays: number) => Promise<string | undefined>>()
 
-jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('../src/artifact.js', () => ({ uploadFullSummary }))
+vi.doMock('@actions/core', () => core)
+vi.doMock('../src/artifact.js', () => ({ uploadFullSummary }))
 
 const { formatDuration, maxSummaryBytes, renderSummary, writeSummary } =
   await import('../src/summary.js')

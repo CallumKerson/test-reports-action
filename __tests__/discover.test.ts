@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import * as core from '../__fixtures__/core.js'
 
-jest.unstable_mockModule('@actions/core', () => core)
+vi.doMock('@actions/core', () => core)
 
 const { findReports } = await import('../src/discover.js')
 const { parseGoTest } = await import('../src/gotest.js')
