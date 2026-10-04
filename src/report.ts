@@ -31,3 +31,13 @@ export function countResults(cases: TestCase[]): TestCounts {
   }
   return counts
 }
+
+/**
+ * Describes counts in words, such as `3 passed, 1 skipped`.
+ */
+export function describeCounts(counts: TestCounts): string {
+  const parts = (['passed', 'failed', 'skipped'] as const)
+    .filter((status) => counts[status] > 0)
+    .map((status) => `${counts[status]} ${status}`)
+  return parts.length > 0 ? parts.join(', ') : 'No tests'
+}

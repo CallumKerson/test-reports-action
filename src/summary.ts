@@ -1,6 +1,11 @@
 import * as core from '@actions/core'
 import { uploadFullSummary } from './artifact.js'
-import { countResults, type TestCase, type TestReport } from './report.js'
+import {
+  countResults,
+  describeCounts,
+  type TestCase,
+  type TestReport
+} from './report.js'
 
 // GitHub rejects a step summary over 1 MiB
 export const maxSummaryBytes = 1024 * 1024
@@ -11,14 +16,14 @@ const maxLines = 50
 const ansiEscape = /\u001b\[[0-?]*[ -/]*[@-~]/g
 
 /**
- * How much of each failure to show: everything, a limited amount of it, or
- * none, leaving only the table of results.
+ * How much of each report to show: everything, a limited amount of each
+ * failure, or none, leaving only each report's counts.
  */
 export type Detail = 'full' | 'limited' | 'none'
 
 /**
- * Writes a table of results and the details of every failed test to the job
- * summary.
+ * Writes a table for each report to the job summary: a row per suite when
+ * everything passed, or else a row per failed test with its failure.
  *
  * A summary too big for GitHub is cut short, and the full one is uploaded as
  * an artifact, kept for retentionDays, and linked from it.
@@ -50,59 +55,82 @@ function fits(html: string): boolean {
 }
 
 export function renderSummary(reports: TestReport[], detail: Detail): string {
-  const rows = reports.map((report) => {
-    const counts = countResults(report.cases)
-    const icon = counts.failed > 0 ? '❌' : '✅'
+  return [
+    '<h2>Test results</h2>',
+    ...reports.map((report) => renderReport(report, detail))
+  ].join('\n')
+}
+
+function renderReport(report: TestReport, detail: Detail): string {
+  const counts = countResults(report.cases)
+  const icon = counts.failed > 0 ? '❌' : '✅'
+  const heading = [
+    `<h3>${icon} ${escape(report.name)}</h3>`,
+    `<p><code>${escape(report.path)}</code> · ${describeCounts(counts)} · ${formatDuration(counts.durationMs)}</p>`
+  ]
+  if (detail === 'none' || report.cases.length === 0) return heading.join('\n')
+  const table =
+    counts.failed > 0
+      ? renderFailures(report.cases, detail === 'limited')
+      : renderSuites(report.cases)
+  return [...heading, ...table].join('\n')
+}
+
+// When everything passed, a row per test would be long and say nothing more
+// than a row per suite
+function renderSuites(cases: TestCase[]): string[] {
+  const suites = new Map<string, TestCase[]>()
+  for (const testCase of cases) {
+    suites.set(testCase.suite, [
+      ...(suites.get(testCase.suite) ?? []),
+      testCase
+    ])
+  }
+  const rows = [...suites].map(([suite, suiteCases]) => {
+    const counts = countResults(suiteCases)
     return row('td', [
-      `${icon} ${escape(report.name)}`,
+      escape(suite),
       String(counts.passed),
-      String(counts.failed),
       String(counts.skipped),
       formatDuration(counts.durationMs)
     ])
   })
-  const table = [
+  return [
     '<table>',
-    row('th', ['Report', 'Passed', 'Failed', 'Skipped', 'Duration']),
+    row('th', ['Suite', 'Passed', 'Skipped', 'Duration']),
     ...rows,
     '</table>'
-  ].join('\n')
-
-  const failures =
-    detail === 'none'
-      ? []
-      : reports.flatMap((report) =>
-          renderFailures(report, detail === 'limited')
-        )
-  return ['<h2>Test results</h2>', table, ...failures].join('\n')
-}
-
-function renderFailures(report: TestReport, limited: boolean): string[] {
-  const failures = report.cases.filter(({ status }) => status === 'failed')
-  if (failures.length === 0) return []
-
-  const shown = (limited ? failures.slice(0, maxFailures) : failures).map(
-    (testCase) => renderFailure(testCase, limited)
-  )
-  const hidden = failures.length - shown.length
-  if (hidden > 0) shown.push(`<p>…and ${hidden} more failed tests</p>`)
-  return [
-    `<h3>❌ ${escape(report.name)}</h3>`,
-    `<p><code>${escape(report.path)}</code></p>`,
-    ...shown
   ]
 }
 
-function renderFailure(testCase: TestCase, limited: boolean): string {
-  const title =
-    testCase.suite && testCase.suite !== testCase.name
-      ? `${testCase.suite} › ${testCase.name}`
-      : testCase.name
-  const message = testCase.message?.replace(ansiEscape, '')
-  const body = message
-    ? `<pre><code>${escape(limited ? truncate(message) : message)}</code></pre>`
-    : '<p>No failure message</p>'
-  return `<details><summary>${escape(title)}</summary>\n\n${body}\n</details>`
+function renderFailures(cases: TestCase[], limited: boolean): string[] {
+  const failures = cases.filter(({ status }) => status === 'failed')
+  const shown = limited ? failures.slice(0, maxFailures) : failures
+  const rows = shown.map((testCase) =>
+    row('td', [
+      escape(testCase.suite),
+      escape(testCase.name),
+      renderMessage(testCase.message, limited)
+    ])
+  )
+  const hidden = failures.length - shown.length
+  return [
+    '<table>',
+    row('th', ['Suite', 'Test', 'Failure']),
+    ...rows,
+    '</table>',
+    ...(hidden > 0 ? [`<p>…and ${hidden} more failed tests</p>`] : [])
+  ]
+}
+
+// The blank line before <pre> starts a new HTML block in GitHub's Markdown,
+// which only ends at </pre>, so blank lines in the message don't end it early
+// and turn the rest of the message into Markdown
+function renderMessage(message: string | undefined, limited: boolean): string {
+  const text = message?.replace(ansiEscape, '').trim()
+  if (!text) return 'No failure message'
+  const [firstLine] = text.split('\n')
+  return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(limited ? truncate(text) : text)}</code></pre>\n</details>`
 }
 
 function truncate(message: string): string {
