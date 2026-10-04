@@ -139,7 +139,8 @@ describe('main.ts', () => {
             durationMs: 0,
             message: 'not a JUnit report: no <testsuite> element'
           }
-        ]
+        ],
+        parseError: 'not a JUnit report: no <testsuite> element'
       },
       {
         name: 'good',
@@ -149,7 +150,24 @@ describe('main.ts', () => {
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
     expect(setStatuses).toHaveBeenCalledWith('token', reports, '')
-    expect(core.setFailed).toHaveBeenCalledWith('1 test failed')
+    expect(core.setFailed).toHaveBeenCalledWith('1 report could not be parsed')
+  })
+
+  it('Fails naming both failed tests and unparsable reports', async () => {
+    findReports.mockResolvedValue([
+      await report('a', '<project/>'),
+      await report('b', '<project/>'),
+      await report(
+        'c',
+        '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
+      )
+    ])
+
+    await run()
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      '1 test failed and 2 reports could not be parsed'
+    )
   })
 
   it.each([

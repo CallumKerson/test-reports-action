@@ -12,6 +12,8 @@ export interface TestReport {
   name: string
   path: string
   cases: TestCase[]
+  /** Why the report could not be parsed, when it couldn't */
+  parseError?: string
 }
 
 export interface TestCounts {
