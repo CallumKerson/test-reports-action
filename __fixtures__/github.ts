@@ -1,9 +1,10 @@
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 
-export const createCommitStatus =
-  jest.fn<(params: object) => Promise<unknown>>()
+export const createCommitStatus = vi.fn<(params: object) => Promise<unknown>>()
 
-export const getOctokit = jest.fn(() => ({
+export const getOctokit = vi.fn<
+  () => { rest: { repos: { createCommitStatus: typeof createCommitStatus } } }
+>(() => ({
   rest: { repos: { createCommitStatus } }
 }))
 

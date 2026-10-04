@@ -14,7 +14,7 @@ running aube.
 Add dependencies with `aube add`, not npm, so `package-lock.json` stays in
 aube's layout.
 
-- **Test**: `mise run test` - Runs the Jest tests with coverage
+- **Test**: `mise run test` - Runs the Vitest tests with coverage
 - **Type check**: `mise run typecheck` - Runs `tsc --noEmit` over `src/`
 - **Package**: `mise run package` - Bundles `src/` and every dependency into
   `dist/index.js` with [tsdown](https://tsdown.dev)
@@ -47,7 +47,7 @@ On `main`, `dist/` is the latest release's build, not a build of `main`.
   `Tests / <name>` commit statuses
 - `src/artifact.ts` - uploads the full summary as an artifact when it is over
   GitHub's 1 MiB limit, and the job summary is cut short
-- `__tests__/` - Jest tests, which mock `@actions/core`, `@actions/github` and
+- `__tests__/` - Vitest tests, which mock `@actions/core`, `@actions/github` and
   `@actions/artifact` with the stubs in `__fixtures__/`
 - `__fixtures__/junit/*.xml`, `__fixtures__/gotest/*.jsonl` - sample reports,
   named so the action doesn't find them when it runs on this repository

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { parseJUnit } from '../src/junit.js'
 
