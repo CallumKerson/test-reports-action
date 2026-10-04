@@ -66,7 +66,7 @@ On `main`, `dist/` is the latest release's build, not a build of `main`.
   Do not minify to get around this: the action is public, and people audit
   `dist/index.js` before using it.
   The flat tree also lets code import packages it does not declare, so add
-  every import to `package.json`.
+  every import to `package.json`. knip fails the check on any it finds.
 
 ## Configuration
 
@@ -78,6 +78,8 @@ YAML files use the `.yaml` extension.
 - Formatting is oxfmt, with no semicolons, single quotes and no trailing commas
 - Linting is oxlint for TypeScript, rumdl for Markdown, ryl for YAML, tombi for
   TOML, and actionlint and zizmor for workflows
+- knip finds unused files, exports and dependencies, and imports missing from
+  `package.json`. Its config is `.config/knip.jsonc`
 
 ## Code Patterns
 
