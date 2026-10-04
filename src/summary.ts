@@ -6,6 +6,9 @@ import { countResults, type TestCase, type TestReport } from './report.js'
 export const maxSummaryBytes = 1024 * 1024
 const maxFailures = 50
 const maxLines = 50
+// Terminal colours and styles, which test runners leave in their output
+// oxlint-disable-next-line no-control-regex -- matching ESC is the point
+const ansiEscape = /\u001b\[[0-?]*[ -/]*[@-~]/g
 
 /**
  * How much of each failure to show: everything, a limited amount of it, or
@@ -95,8 +98,9 @@ function renderFailure(testCase: TestCase, limited: boolean): string {
     testCase.suite && testCase.suite !== testCase.name
       ? `${testCase.suite} › ${testCase.name}`
       : testCase.name
-  const body = testCase.message
-    ? `<pre><code>${escape(limited ? truncate(testCase.message) : testCase.message)}</code></pre>`
+  const message = testCase.message?.replace(ansiEscape, '')
+  const body = message
+    ? `<pre><code>${escape(limited ? truncate(message) : message)}</code></pre>`
     : '<p>No failure message</p>'
   return `<details><summary>${escape(title)}</summary>\n\n${body}\n</details>`
 }

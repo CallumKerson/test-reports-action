@@ -66,6 +66,22 @@ describe('summary.ts', () => {
     expect(html).not.toContain('adds</summary>')
   })
 
+  it('Strips terminal colours from failure messages', () => {
+    const html = renderSummary(
+      [
+        report('unit', [
+          {
+            ...failed,
+            message: '\u001b[31mExpected\u001b[39m: \u001b[1;32m2\u001b[0m'
+          }
+        ])
+      ],
+      'full'
+    )
+
+    expect(html).toContain('<pre><code>Expected: 2</code></pre>')
+  })
+
   it('Leaves out a suite that repeats the test name', () => {
     const html = renderSummary(
       [
