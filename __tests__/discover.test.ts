@@ -14,11 +14,13 @@ describe('discover.ts', () => {
   let workspace: string
 
   const files = async (...names: string[]) => {
-    for (const name of names) {
-      const file = path.join(workspace, name)
-      await mkdir(path.dirname(file), { recursive: true })
-      await writeFile(file, '')
-    }
+    await Promise.all(
+      names.map(async (name) => {
+        const file = path.join(workspace, name)
+        await mkdir(path.dirname(file), { recursive: true })
+        await writeFile(file, '')
+      })
+    )
   }
 
   beforeEach(async () => {

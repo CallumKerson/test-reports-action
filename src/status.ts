@@ -24,33 +24,35 @@ export async function setStatuses(
   const prefix = jobName ? `Tests (${jobName})` : 'Tests'
   const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
 
-  for (const report of reports) {
-    const counts = countResults(report.cases)
-    try {
-      await octokit.rest.repos.createCommitStatus({
-        ...context.repo,
-        sha,
-        state: counts.failed > 0 ? 'failure' : 'success',
-        context: `${prefix} / ${report.name}`,
-        description: describe(counts),
-        target_url: targetUrl
+  try {
+    await Promise.all(
+      reports.map((report) => {
+        const counts = countResults(report.cases)
+        return octokit.rest.repos.createCommitStatus({
+          ...context.repo,
+          sha,
+          state: counts.failed > 0 ? 'failure' : 'success',
+          context: `${prefix} / ${report.name}`,
+          description: describe(counts),
+          target_url: targetUrl
+        })
       })
-    } catch (error) {
-      // A token without statuses: write, such as on a pull request from a
-      // fork, can't set any status, but the summary is still worth having
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'status' in error &&
-        error.status === 403
-      ) {
-        core.warning(
-          'Could not set commit statuses: the token needs the statuses: write permission'
-        )
-        return
-      }
-      throw error
+    )
+  } catch (error) {
+    // A token without statuses: write, such as on a pull request from a
+    // fork, can't set any status, but the summary is still worth having
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      error.status === 403
+    ) {
+      core.warning(
+        'Could not set commit statuses: the token needs the statuses: write permission'
+      )
+      return
     }
+    throw error
   }
 }
 

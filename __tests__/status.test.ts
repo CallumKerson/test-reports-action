@@ -105,7 +105,7 @@ describe('status.ts', () => {
     )
   })
 
-  it('Warns once and stops when the token cannot set statuses', async () => {
+  it('Warns once when the token cannot set statuses', async () => {
     github.createCommitStatus.mockRejectedValue(
       Object.assign(new Error('Resource not accessible by integration'), {
         status: 403
@@ -114,7 +114,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('a', []), report('b', [])], '')
 
-    expect(github.createCommitStatus).toHaveBeenCalledTimes(1)
+    expect(core.warning).toHaveBeenCalledTimes(1)
     expect(core.warning).toHaveBeenCalledWith(
       expect.stringContaining('statuses: write')
     )
