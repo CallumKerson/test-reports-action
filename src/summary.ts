@@ -158,10 +158,7 @@ const renderSummary = (reports: TestReport[], detail: Detail): string =>
     ...reports.map((report) => renderReport(report, detail))
   ].join('\n')
 
-const cutShortNote = (
-  url: string | undefined,
-  retentionDays: number
-): string => {
+const cutShortNote = (url: string | null, retentionDays: number): string => {
   if (!url) {
     return "<p>⚠️ Cut short to fit GitHub's 1 MiB limit.</p>"
   }

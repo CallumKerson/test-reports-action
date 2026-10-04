@@ -76,9 +76,7 @@ describe('artifact.ts', () => {
     await runnerTemp()
     uploadArtifact.mockRejectedValue(new Error('Network down'))
 
-    await expect(
-      uploadFullSummary('<h2>Results</h2>', 7)
-    ).resolves.toBeUndefined()
+    await expect(uploadFullSummary('<h2>Results</h2>', 7)).resolves.toBeNull()
     expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
@@ -90,9 +88,7 @@ describe('artifact.ts', () => {
     await runnerTemp()
     uploadArtifact.mockRejectedValue('Network down')
 
-    await expect(
-      uploadFullSummary('<h2>Results</h2>', 7)
-    ).resolves.toBeUndefined()
+    await expect(uploadFullSummary('<h2>Results</h2>', 7)).resolves.toBeNull()
     expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
@@ -104,9 +100,7 @@ describe('artifact.ts', () => {
     await runnerTemp()
     uploadArtifact.mockRejectedValue(conflict)
 
-    await expect(
-      uploadFullSummary('<h2>Results</h2>', 7)
-    ).resolves.toBeUndefined()
+    await expect(uploadFullSummary('<h2>Results</h2>', 7)).resolves.toBeNull()
     expect(uploadArtifact).toHaveBeenCalledTimes(50)
     expect(warning).toHaveBeenCalledWith(
       'Could not upload the full summary: test-results-test.html to test-results-test-50.html are all taken'

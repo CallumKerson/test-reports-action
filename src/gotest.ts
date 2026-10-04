@@ -1,13 +1,13 @@
 import type { TestCase, TestStatus } from './report.js'
 
 interface Event {
-  Action?: string
-  Package?: string
-  Test?: string
-  Output?: string
-  Elapsed?: number
-  ImportPath?: string
-  FailedBuild?: string
+  Action: string | null
+  Package: string | null
+  Test: string | null
+  Output: string | null
+  Elapsed: number | null
+  ImportPath: string | null
+  FailedBuild: string | null
 }
 
 interface Test {
@@ -20,7 +20,7 @@ interface Test {
 
 interface Package {
   failed: boolean
-  failedBuild?: string
+  failedBuild: string | null
   elapsed: number
   output: string[]
 }
@@ -97,6 +97,7 @@ const record = ({ tests, packages, builds }: Results, event: Event): void => {
       getOrAdd(packages, pkg, () => ({
         elapsed: 0,
         failed: false,
+        failedBuild: null,
         output: []
       })),
       event
@@ -129,7 +130,7 @@ const clean = (output: string[]): string => {
 
 const buildOutput = (
   builds: Map<string, string[]>,
-  failedBuild: string | undefined
+  failedBuild: string | null
 ): string[] => {
   if (failedBuild) {
     return builds.get(failedBuild) ?? []
@@ -160,35 +161,35 @@ const parseJson = (line: string): unknown => {
   try {
     return JSON.parse(line)
   } catch {
-    return undefined
+    return null
   }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const text = (value: unknown): string | undefined => {
+const text = (value: unknown): string | null => {
   if (typeof value === 'string') {
     return value
   }
-  return undefined
+  return null
 }
 
-const numeric = (value: unknown): number | undefined => {
+const numeric = (value: unknown): number | null => {
   if (typeof value === 'number') {
     return value
   }
-  return undefined
+  return null
 }
 
-const parseEvent = (line: string): Event | undefined => {
+const parseEvent = (line: string): Event | null => {
   // Build errors go to stderr, which is sometimes redirected into the file
   if (!line.startsWith('{')) {
-    return undefined
+    return null
   }
   const fields = parseJson(line)
   if (!isRecord(fields)) {
-    return undefined
+    return null
   }
   return {
     Action: text(fields.Action),
@@ -268,7 +269,7 @@ export const parseGoTest = (ndjson: string): TestCase[] => {
   const events = ndjson
     .split('\n')
     .map(parseEvent)
-    .filter((event) => event !== undefined)
+    .filter((event) => event !== null)
   if (events.length === 0 && ndjson.trim()) {
     throw new Error('not a go test -json report: no JSON events')
   }

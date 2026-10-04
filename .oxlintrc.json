@@ -34,8 +34,6 @@
     // Arbitrary limits that would split code for no reader's benefit
     "no-magic-numbers": "off", // test data, and units such as ms per second
 
-    // TypeScript's optional values are undefined, not null
-    "no-undefined": "off",
     // An action reads its inputs and runner settings from the environment
     "node/no-process-env": "off"
   },
@@ -49,6 +47,9 @@
         "vitest/no-importing-vitest-globals": "off",
         // Tests import the source they test from ../src
         "import/no-relative-parent-imports": "off",
+        // Mocks and stubbed environment variables stand for missing values with
+        // undefined, as the APIs they stand in for do
+        "no-undefined": "off",
         // Mocks mirror the APIs they stand in for
         "max-params": "off",
         // A describe block holds a statement for each of its tests
