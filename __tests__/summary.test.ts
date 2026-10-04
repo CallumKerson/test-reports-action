@@ -37,7 +37,7 @@ describe('summary.ts', () => {
     core.summary.addRaw.mockReturnValue(core.summary)
   })
 
-  it('Renders a row of counts for each report', () => {
+  it('Renders a heading with the counts for each report', () => {
     const html = renderSummary(
       [
         report('unit', [passed, failed]),
@@ -47,21 +47,49 @@ describe('summary.ts', () => {
     )
 
     expect(html).toContain(
-      '<tr><td>❌ unit</td><td>1</td><td>1</td><td>0</td><td>1.5s</td></tr>'
+      '<h3>❌ unit</h3>\n<p><code>unit.junit.xml</code> · 1 passed, 1 failed · 1.5s</p>'
     )
     expect(html).toContain(
-      '<tr><td>✅ go</td><td>0</td><td>0</td><td>1</td><td>0ms</td></tr>'
+      '<h3>✅ go</h3>\n<p><code>go.junit.xml</code> · 1 skipped · 0ms</p>'
     )
   })
 
-  it('Renders escaped details for each failed test', () => {
+  it('Renders a row per suite when everything passed', () => {
+    const html = renderSummary(
+      [
+        report('unit', [
+          passed,
+          { ...passed, name: 'subtracts', durationMs: 300 },
+          { ...passed, suite: 'text', status: 'skipped', durationMs: 0 }
+        ])
+      ],
+      'full'
+    )
+
+    expect(html).toContain(
+      [
+        '<table>',
+        '<tr><th>Suite</th><th>Passed</th><th>Skipped</th><th>Duration</th></tr>',
+        '<tr><td>math</td><td>2</td><td>0</td><td>1.5s</td></tr>',
+        '<tr><td>text</td><td>0</td><td>1</td><td>0ms</td></tr>',
+        '</table>'
+      ].join('\n')
+    )
+    expect(html).not.toContain('<details>')
+  })
+
+  it('Renders a row per failed test with its escaped failure', () => {
     const html = renderSummary([report('unit', [passed, failed])], 'full')
 
-    expect(html).toContain('<h3>❌ unit</h3>')
     expect(html).toContain(
-      '<details><summary>math › divides</summary>\n\n<pre><code>Expected: &lt;2&gt;\nReceived: 3</code></pre>\n</details>'
+      [
+        '<table>',
+        '<tr><th>Suite</th><th>Test</th><th>Failure</th></tr>',
+        '<tr><td>math</td><td>divides</td><td><details><summary>Expected: &lt;2&gt;</summary>\n\n<pre><code>Expected: &lt;2&gt;\nReceived: 3</code></pre>\n</details></td></tr>',
+        '</table>'
+      ].join('\n')
     )
-    expect(html).not.toContain('adds</summary>')
+    expect(html).not.toContain('adds')
   })
 
   it('Strips terminal colours from failure messages', () => {
@@ -77,10 +105,12 @@ describe('summary.ts', () => {
       'full'
     )
 
-    expect(html).toContain('<pre><code>Expected: 2</code></pre>')
+    expect(html).toContain(
+      '<summary>Expected: 2</summary>\n\n<pre><code>Expected: 2</code></pre>'
+    )
   })
 
-  it('Leaves out a suite that repeats the test name', () => {
+  it('Says when a failed test has no message', () => {
     const html = renderSummary(
       [
         report('go', [
@@ -91,13 +121,13 @@ describe('summary.ts', () => {
     )
 
     expect(html).toContain(
-      '<details><summary>pkg</summary>\n\n<p>No failure message</p>\n</details>'
+      '<tr><td>pkg</td><td>pkg</td><td>No failure message</td></tr>'
     )
   })
 
-  it('Leaves out failure details when everything passed', () => {
-    expect(renderSummary([report('unit', [passed])], 'full')).not.toContain(
-      '<details>'
+  it('Renders only the heading for a report with no tests', () => {
+    expect(renderSummary([report('empty', [])], 'full')).toBe(
+      '<h2>Test results</h2>\n<h3>✅ empty</h3>\n<p><code>empty.junit.xml</code> · No tests · 0ms</p>'
     )
   })
 
@@ -126,11 +156,12 @@ describe('summary.ts', () => {
       expect(html).toContain('<p>…and 3 more failed tests</p>')
     })
 
-    it('Renders only the table with no detail', () => {
+    it('Renders only the counts with no detail', () => {
       const html = renderSummary([report('unit', failures)], 'none')
 
-      expect(html).toContain('<tr><td>❌ unit</td>')
-      expect(html).not.toContain('<h3>')
+      expect(html).toContain('<h3>❌ unit</h3>')
+      expect(html).toContain('53 failed')
+      expect(html).not.toContain('<table>')
     })
   })
 
@@ -183,11 +214,11 @@ describe('summary.ts', () => {
       await writeSummary([report('unit', big(1100))], 7)
 
       expect(written()).toMatch(
-        /<\/details>\n<p>…and 1050 more failed tests<\/p>\n<p>⚠️ Cut short to fit GitHub's 1 MiB limit.<\/p>$/
+        /<\/table>\n<p>…and 1050 more failed tests<\/p>\n<p>⚠️ Cut short to fit GitHub's 1 MiB limit.<\/p>$/
       )
     })
 
-    it('Writes only the table when the cut short summary is still too big', async () => {
+    it('Writes only the counts when the cut short summary is still too big', async () => {
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
       const reports = Array.from({ length: 21 }, (_, i) =>
         report(`unit${i}`, big(50))
@@ -195,8 +226,8 @@ describe('summary.ts', () => {
 
       await writeSummary(reports, 7)
 
-      expect(written()).toMatch(/^<h2>Test results<\/h2>\n<table>/)
-      expect(written()).not.toContain('<details>')
+      expect(written()).toMatch(/^<h2>Test results<\/h2>\n<h3>/)
+      expect(written()).not.toContain('<table>')
       expect(written()).toContain('Download the full summary')
     })
   })

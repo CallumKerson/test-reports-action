@@ -34,8 +34,7 @@ paths to configure:
 For each report it sets a commit status named `Tests / <name>`, where the name
 is the file name without the format suffix, so `unit.junit.xml` becomes
 `Tests / unit`. When two reports would share a name, their directories are
-added to tell them apart. It also writes the results and the details of every
-failed test to the job summary.
+added to tell them apart.
 
 In a matrix job, every job finds reports with the same names, so the matrix
 values are added to each status, as in `Tests (ubuntu-latest, 24) / unit`.
@@ -45,10 +44,15 @@ Separate jobs or workflows that report on the same commit with the same report
 names overwrite each other's statuses too, and the action can't tell when
 that happens. Give each of them its own `name`.
 
+It also writes a table for each report to the job summary. When everything in
+a report passed, its table has a row for each suite. Otherwise, it has a row
+for each failed test, with the test's failure output.
+
 GitHub limits a job summary to 1 MiB. When the full summary is bigger than
 that, the job summary shows at most 50 failures per report and 50 lines of
-each failure's output. The full summary is uploaded as an HTML artifact,
-linked from the job summary, and kept for `retention-days`.
+each failure's output, or only each report's counts if that is still too big.
+The full summary is uploaded as an HTML artifact, linked from the job summary,
+and kept for `retention-days`.
 
 The step fails if any test failed, and only warns when it finds no reports.
 A report that can't be parsed shows up as a failed test, so the other reports

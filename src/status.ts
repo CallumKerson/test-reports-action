@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { countResults, type TestReport } from './report.js'
+import { countResults, describeCounts, type TestReport } from './report.js'
 
 /**
  * Sets a commit status for each report, linking back to this run.
@@ -33,7 +33,7 @@ export async function setStatuses(
           sha,
           state: counts.failed > 0 ? 'failure' : 'success',
           context: `${prefix} / ${report.name}`,
-          description: describe(counts),
+          description: describeCounts(counts),
           target_url: targetUrl
         })
       })
@@ -54,11 +54,4 @@ export async function setStatuses(
     }
     throw error
   }
-}
-
-function describe(counts: ReturnType<typeof countResults>): string {
-  const parts = (['passed', 'failed', 'skipped'] as const)
-    .filter((status) => counts[status] > 0)
-    .map((status) => `${counts[status]} ${status}`)
-  return parts.length > 0 ? parts.join(', ') : 'No tests'
 }
