@@ -46,10 +46,7 @@
     // TypeScript's optional values are undefined, not null
     "no-undefined": "off",
     // An action reads its inputs and runner settings from the environment
-    "node/no-process-env": "off",
-    // The entry point awaits run(), and tests import modules after mocking
-    // them. An action is never loaded with require()
-    "node/no-top-level-await": "off"
+    "node/no-process-env": "off"
   },
   "overrides": [
     {

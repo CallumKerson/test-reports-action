@@ -2,13 +2,11 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import * as core from '../__fixtures__/core.js'
+import { findReports } from '../src/discover.js'
+import { parseGoTest } from '../src/gotest.js'
+import { parseJUnit } from '../src/junit.js'
 
-vi.doMock(import('@actions/core'), () => core)
-
-const { findReports } = await import('../src/discover.js')
-const { parseGoTest } = await import('../src/gotest.js')
-const { parseJUnit } = await import('../src/junit.js')
+vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
 
 describe('discover.ts', () => {
   const workspaceWith = async (...names: string[]): Promise<string> => {
