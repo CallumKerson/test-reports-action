@@ -32,12 +32,18 @@ export async function run(): Promise<void> {
       jobName(core.getInput('name'), core.getInput('matrix'))
     )
 
-    const failed = reports.reduce(
-      (total, report) => total + countResults(report.cases).failed,
-      0
-    )
-    if (failed > 0)
-      core.setFailed(`${failed} ${failed === 1 ? 'test' : 'tests'} failed`)
+    // A report that can't be parsed is a failed test in the summary and its
+    // status, but it isn't a test that failed
+    const unparsable = reports.filter((report) => report.parseError).length
+    const failed = reports
+      .filter((report) => !report.parseError)
+      .reduce((total, report) => total + countResults(report.cases).failed, 0)
+    const problems = [
+      failed > 0 && `${failed} ${failed === 1 ? 'test' : 'tests'} failed`,
+      unparsable > 0 &&
+        `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
+    ].filter(Boolean)
+    if (problems.length > 0) core.setFailed(problems.join(' and '))
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
@@ -65,7 +71,8 @@ async function readReport(file: ReportFile): Promise<TestReport> {
           durationMs: 0,
           message
         }
-      ]
+      ],
+      parseError: message
     }
   }
 }
