@@ -17,7 +17,7 @@ permissions:
   statuses: write
 
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v7
   - run: go test -json ./... > results.gotest.json
   - uses: CallumKerson/test-reports-action@v0
     if: ${{ !cancelled() }}
@@ -40,6 +40,10 @@ failed test to the job summary.
 In a matrix job, every job finds reports with the same names, so the matrix
 values are added to each status, as in `Tests (ubuntu-latest, 24) / unit`.
 Set `name` to use something else.
+
+Separate jobs or workflows that report on the same commit with the same report
+names overwrite each other's statuses too, and the action can't tell when
+that happens. Give each of them its own `name`.
 
 GitHub limits a job summary to 1 MiB. When the full summary is bigger than
 that, the job summary shows at most 50 failures per report and 50 lines of
