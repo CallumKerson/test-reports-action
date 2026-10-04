@@ -56,9 +56,7 @@ jobs:
         uses: jdx/mise-action@94c60b39bc2d90ab2f9bab27f38d3cc4812c1834 # v5.1.0
       - run: mise run package
       - name: Write a passing report
-        run: |
-          mkdir -p reports
-          echo '<testsuite name="matrix"><testcase name="passes"/></testsuite>' > reports/matrix.junit.xml
+        run: ./.github/scripts/write-matrix-report.sh
       # ./ runs the build from the step above, as in the ci job
       - uses: ./ # zizmor: ignore[self-repository]
       - name: Check the status is named after the matrix leg
@@ -66,9 +64,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           CONTEXT: Tests (${{ matrix.leg }}) / matrix
-        run: |
-          gh api --paginate "repos/$GITHUB_REPOSITORY/commits/$SHA/statuses" --jq '.[].context' |
-            grep -Fqx "$CONTEXT" || {
-            echo "::error::No commit status named '$CONTEXT'"
-            exit 1
-          }
+        run: ./.github/scripts/check-status-exists.sh

@@ -22,15 +22,12 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      # Run directly, as it needs only git and so no tooling install
       - name: Check dist/ is unchanged
         if: ${{ !startsWith(github.head_ref, 'release-please--') }}
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: |
-          if ! git diff --quiet "origin/$BASE_REF...HEAD" -- dist/; then
-            echo "::error::dist/ is only updated by the release PR, revert the changes to it"
-            exit 1
-          fi
+        run: ./tasks/check-dist-unchanged
       - name: Install tooling
         if: ${{ startsWith(github.head_ref, 'release-please--') }}
         uses: jdx/mise-action@94c60b39bc2d90ab2f9bab27f38d3cc4812c1834 # v5.1.0
