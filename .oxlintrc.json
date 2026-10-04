@@ -19,10 +19,12 @@
     // the other one
     "capitalized-comments": "off", // wrapped comments continue in lower case
     "one-var": "off",
-    "import/consistent-type-specifier-style": "off", // type imports are inline
 
-    // These conflict: modules export named functions, so there is never a
-    // single default to prefer
+    // no-duplicate-imports wants one import from each module, so types are
+    // imported inline, alongside the values from the same module
+    "import/consistent-type-specifier-style": "off",
+    // import/no-default-export is on, so modules export by name, which these
+    // forbid, or ask for a default in place of
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
 
@@ -42,7 +44,8 @@
       "files": ["__tests__/**", "__fixtures__/**", ".config/vitest.config.ts"],
       "plugins": ["vitest"],
       "rules": {
-        // Tests import from vitest explicitly rather than using globals
+        // Conflicts with vitest/prefer-importing-vitest-globals, so tests
+        // import from vitest rather than using globals
         "vitest/no-importing-vitest-globals": "off",
         // Tests import the source they test from ../src
         "import/no-relative-parent-imports": "off",
