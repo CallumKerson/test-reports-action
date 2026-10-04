@@ -23,7 +23,7 @@ interface TestCounts {
   durationMs: number
 }
 
-function countResults(cases: TestCase[]): TestCounts {
+const countResults = (cases: TestCase[]): TestCounts => {
   const counts = { durationMs: 0, failed: 0, passed: 0, skipped: 0 }
   for (const testCase of cases) {
     counts[testCase.status] += 1
@@ -35,7 +35,7 @@ function countResults(cases: TestCase[]): TestCounts {
 /**
  * Describes counts in words, such as `3 passed, 1 skipped`.
  */
-function describeCounts(counts: TestCounts): string {
+const describeCounts = (counts: TestCounts): string => {
   const parts = (['passed', 'failed', 'skipped'] as const)
     .filter((status) => counts[status] > 0)
     .map((status) => `${counts[status]} ${status}`)

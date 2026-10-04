@@ -7,14 +7,14 @@ import {
 import { context, getOctokit } from '@actions/github'
 import { warning } from '@actions/core'
 
-function statusPrefix(jobName: string): string {
+const statusPrefix = (jobName: string): string => {
   if (jobName) {
     return `Tests (${jobName})`
   }
   return 'Tests'
 }
 
-function state(counts: TestCounts): 'failure' | 'success' {
+const state = (counts: TestCounts): 'failure' | 'success' => {
   if (counts.failed > 0) {
     return 'failure'
   }
@@ -27,11 +27,11 @@ function state(counts: TestCounts): 'failure' | 'success' {
  * Statuses are named `Tests / <report>`, or `Tests (<jobName>) / <report>`
  * when the job has a name.
  */
-export async function setStatuses(
+export const setStatuses = async (
   token: string,
   reports: TestReport[],
   jobName: string
-): Promise<void> {
+): Promise<void> => {
   const octokit = getOctokit(token)
   // On pull requests, context.sha is a merge commit that the PR never shows,
   // and on workflow_run it is the latest commit on the default branch

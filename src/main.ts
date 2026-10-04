@@ -14,7 +14,7 @@ import { writeSummary } from './summary.js'
 
 // A report that can't be parsed is a failed test in the summary and its
 // status, but it isn't a test that failed
-function failOnProblems(reports: TestReport[]): void {
+const failOnProblems = (reports: TestReport[]): void => {
   const unparsable = reports.filter((report) => report.parseError).length
   const failed = reports
     .filter((report) => !report.parseError)
@@ -28,7 +28,7 @@ function failOnProblems(reports: TestReport[]): void {
   }
 }
 
-async function readReport(file: ReportFile): Promise<TestReport> {
+const readReport = async (file: ReportFile): Promise<TestReport> => {
   info(`Reading ${file.path}`)
   const content = await readFile(file.file, 'utf8')
   try {
@@ -55,7 +55,7 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   }
 }
 
-function matrixValue(value: unknown): string {
+const matrixValue = (value: unknown): string => {
   if (typeof value === 'string') {
     return value
   }
@@ -64,7 +64,7 @@ function matrixValue(value: unknown): string {
 
 // Each job in a matrix finds reports with the same names, so without a name of
 // their own they would overwrite each other's statuses
-function jobName(name: string, matrix: string): string {
+const jobName = (name: string, matrix: string): string => {
   if (name) {
     return name
   }
@@ -81,7 +81,7 @@ function jobName(name: string, matrix: string): string {
   }
 }
 
-function parseRetentionDays(input: string): number {
+const parseRetentionDays = (input: string): number => {
   const days = Number(input)
   if (!Number.isInteger(days) || days < 1) {
     throw new Error(
@@ -91,7 +91,7 @@ function parseRetentionDays(input: string): number {
   return days
 }
 
-async function reportResults(): Promise<void> {
+const reportResults = async (): Promise<void> => {
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
   const files = await findReports(workspace)
   // Tests often don't run because an earlier step failed, and that step
@@ -119,7 +119,7 @@ async function reportResults(): Promise<void> {
  *
  * @returns Resolves when the action is complete.
  */
-export async function run(): Promise<void> {
+export const run = async (): Promise<void> => {
   try {
     await reportResults()
   } catch (error) {

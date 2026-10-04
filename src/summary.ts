@@ -24,23 +24,17 @@ const ansiEscape = /\u001b\[[0-?]*[ -/]*[@-~]/g
  */
 type Detail = 'full' | 'limited' | 'none'
 
-function fits(html: string): boolean {
-  return Buffer.byteLength(html) < maxSummaryBytes
-}
+const fits = (html: string): boolean =>
+  Buffer.byteLength(html) < maxSummaryBytes
 
-function row(cell: 'th' | 'td', values: string[]): string {
-  return `<tr>${values.map((value) => `<${cell}>${value}</${cell}>`).join('')}</tr>`
-}
+const row = (cell: 'th' | 'td', values: string[]): string =>
+  `<tr>${values.map((value) => `<${cell}>${value}</${cell}>`).join('')}</tr>`
 
-function escape(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-}
+const escape = (text: string): string =>
+  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 // Each unit is chosen after rounding, so 59.96s shows as 1m 0s, not 60.0s
-function formatDuration(ms: number): string {
+const formatDuration = (ms: number): string => {
   if (Math.round(ms) < 1000) {
     return `${Math.round(ms)}ms`
   }
@@ -54,7 +48,7 @@ function formatDuration(ms: number): string {
 
 // When everything passed, a row per test would be long and say nothing more
 // than a row per suite
-function renderSuites(cases: TestCase[]): string[] {
+const renderSuites = (cases: TestCase[]): string[] => {
   const suites = new Map<string, TestCase[]>()
   for (const testCase of cases) {
     suites.set(testCase.suite, [
@@ -79,7 +73,7 @@ function renderSuites(cases: TestCase[]): string[] {
   ]
 }
 
-function truncate(message: string, limited: boolean): string {
+const truncate = (message: string, limited: boolean): string => {
   const lines = message.split('\n')
   if (!limited || lines.length <= maxLines) {
     return message
@@ -91,7 +85,10 @@ function truncate(message: string, limited: boolean): string {
 // The blank line before <pre> starts a new HTML block in GitHub's Markdown,
 // which only ends at </pre>, so blank lines in the message don't end it early
 // and turn the rest of the message into Markdown
-function renderMessage(message: string | undefined, limited: boolean): string {
+const renderMessage = (
+  message: string | undefined,
+  limited: boolean
+): string => {
   const text = message?.replace(ansiEscape, '').trim()
   if (!text) {
     return 'No failure message'
@@ -100,14 +97,14 @@ function renderMessage(message: string | undefined, limited: boolean): string {
   return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(truncate(text, limited))}</code></pre>\n</details>`
 }
 
-function shownFailures(failures: TestCase[], limited: boolean): TestCase[] {
+const shownFailures = (failures: TestCase[], limited: boolean): TestCase[] => {
   if (limited) {
     return failures.slice(0, maxFailures)
   }
   return failures
 }
 
-function renderFailures(cases: TestCase[], limited: boolean): string[] {
+const renderFailures = (cases: TestCase[], limited: boolean): string[] => {
   const failures = cases.filter(({ status }) => status === 'failed')
   const shown = shownFailures(failures, limited)
   const rows = shown.map((testCase) =>
@@ -130,14 +127,14 @@ function renderFailures(cases: TestCase[], limited: boolean): string[] {
   return table
 }
 
-function icon(counts: TestCounts): string {
+const icon = (counts: TestCounts): string => {
   if (counts.failed > 0) {
     return '❌'
   }
   return '✅'
 }
 
-function renderReport(report: TestReport, detail: Detail): string {
+const renderReport = (report: TestReport, detail: Detail): string => {
   const counts = countResults(report.cases)
   const heading = [
     `<h3>${icon(counts)} ${escape(report.name)}</h3>`,
@@ -155,14 +152,16 @@ function renderReport(report: TestReport, detail: Detail): string {
   return [...heading, ...renderSuites(report.cases)].join('\n')
 }
 
-function renderSummary(reports: TestReport[], detail: Detail): string {
-  return [
+const renderSummary = (reports: TestReport[], detail: Detail): string =>
+  [
     '<h2>Test results</h2>',
     ...reports.map((report) => renderReport(report, detail))
   ].join('\n')
-}
 
-function cutShortNote(url: string | undefined, retentionDays: number): string {
+const cutShortNote = (
+  url: string | undefined,
+  retentionDays: number
+): string => {
   if (!url) {
     return "<p>⚠️ Cut short to fit GitHub's 1 MiB limit.</p>"
   }
@@ -170,7 +169,7 @@ function cutShortNote(url: string | undefined, retentionDays: number): string {
 }
 
 // Many failing reports can be too big even when each one is cut short
-function cutShort(reports: TestReport[], note: string): string {
+const cutShort = (reports: TestReport[], note: string): string => {
   const limited = `${renderSummary(reports, 'limited')}\n${note}`
   if (fits(limited)) {
     return limited
@@ -185,10 +184,10 @@ function cutShort(reports: TestReport[], note: string): string {
  * A summary too big for GitHub is cut short, and the full one is uploaded as
  * an artifact, kept for retentionDays, and linked from it.
  */
-async function writeSummary(
+const writeSummary = async (
   reports: TestReport[],
   retentionDays: number
-): Promise<void> {
+): Promise<void> => {
   const full = renderSummary(reports, 'full')
   if (fits(full)) {
     await summary.addRaw(full, true).write()

@@ -11,11 +11,11 @@ const formats = [
 
 // Commit statuses are keyed by name, so a name shared by two reports would
 // have one overwrite the other
-function uniqueName(
+const uniqueName = (
   relative: string,
   suffix: string,
   reports: { path: string; suffix: string }[]
-): string {
+): string => {
   const candidates = [
     (file: string, ext: string): string => path.posix.basename(file, ext),
     (file: string, ext: string): string => file.slice(0, -ext.length)
@@ -47,7 +47,7 @@ export interface ReportFile {
 /**
  * Finds every test report in the workspace, sorted by path.
  */
-export async function findReports(workspace: string): Promise<ReportFile[]> {
+export const findReports = async (workspace: string): Promise<ReportFile[]> => {
   const patterns = [
     ...formats.map(({ suffix }) => path.join(workspace, `**/*${suffix}`)),
     `!${path.join(workspace, '**/node_modules/**')}`
