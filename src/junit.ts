@@ -20,10 +20,14 @@ const parser = new XMLParser({
  */
 export function parseJUnit(xml: string): TestCase[] {
   const document: unknown = parser.parse(xml)
-  if (!isNode(document)) throw new Error('not a JUnit report: no elements')
+  if (!isNode(document)) {
+    throw new Error('not a JUnit report: no elements')
+  }
   // jest-junit and others write a <testsuites> with no suites in it when no
   // tests ran
-  if ('testsuites' in document) return parseSuites(document.testsuites)
+  if ('testsuites' in document) {
+    return parseSuites(document.testsuites)
+  }
   if (!Array.isArray(document.testsuite)) {
     throw new Error('not a JUnit report: no <testsuite> element')
   }
@@ -31,7 +35,9 @@ export function parseJUnit(xml: string): TestCase[] {
 }
 
 function parseSuites(parent: unknown): TestCase[] {
-  if (!isNode(parent)) return []
+  if (!isNode(parent)) {
+    return []
+  }
   return nodes(parent.testsuite).flatMap(parseSuite)
 }
 
@@ -58,7 +64,9 @@ function parseCase(testCase: XmlNode, suiteName: string): TestCase {
   if (problems.length > 0) {
     result.status = 'failed'
     const message = problems.map(describe).filter(Boolean).join('\n\n')
-    if (message) result.message = message
+    if (message) {
+      result.message = message
+    }
   } else if (testCase.skipped) {
     result.status = 'skipped'
   }
@@ -68,8 +76,12 @@ function parseCase(testCase: XmlNode, suiteName: string): TestCase {
 // The body usually holds the message and a stack trace, so only fall back
 // to the attributes when it is empty
 function describe(problem: unknown): string {
-  if (typeof problem === 'string') return problem.trim()
-  if (!isNode(problem)) return ''
+  if (typeof problem === 'string') {
+    return problem.trim()
+  }
+  if (!isNode(problem)) {
+    return ''
+  }
   const text =
     typeof problem['#text'] === 'string' ? problem['#text'].trim() : ''
   return text || attribute(problem, 'message') || attribute(problem, 'type')

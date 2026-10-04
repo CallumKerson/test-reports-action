@@ -35,7 +35,9 @@ export async function findReports(workspace: string): Promise<ReportFile[]> {
 
   const reports = files.flatMap((file) => {
     const format = formats.find(({ suffix }) => file.endsWith(suffix))
-    if (!format) return []
+    if (!format) {
+      return []
+    }
     const relative = path.relative(workspace, file).split(path.sep).join('/')
     return [
       { file, path: relative, suffix: format.suffix, parse: format.parse }
@@ -64,7 +66,9 @@ function uniqueName(
     const clashes = reports.filter(
       (other) => candidate(other.path, other.suffix) === name
     )
-    if (clashes.length === 1) return name
+    if (clashes.length === 1) {
+      return name
+    }
   }
   // Only reports in the same directory with the same name but different
   // formats get here

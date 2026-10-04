@@ -68,7 +68,9 @@ function renderReport(report: TestReport, detail: Detail): string {
     `<h3>${icon} ${escape(report.name)}</h3>`,
     `<p><code>${escape(report.path)}</code> · ${describeCounts(counts)} · ${formatDuration(counts.durationMs)}</p>`
   ]
-  if (detail === 'none' || report.cases.length === 0) return heading.join('\n')
+  if (detail === 'none' || report.cases.length === 0) {
+    return heading.join('\n')
+  }
   const table =
     counts.failed > 0
       ? renderFailures(report.cases, detail === 'limited')
@@ -128,14 +130,18 @@ function renderFailures(cases: TestCase[], limited: boolean): string[] {
 // and turn the rest of the message into Markdown
 function renderMessage(message: string | undefined, limited: boolean): string {
   const text = message?.replace(ansiEscape, '').trim()
-  if (!text) return 'No failure message'
+  if (!text) {
+    return 'No failure message'
+  }
   const [firstLine] = text.split('\n')
   return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(limited ? truncate(text) : text)}</code></pre>\n</details>`
 }
 
 function truncate(message: string): string {
   const lines = message.split('\n')
-  if (lines.length <= maxLines) return message
+  if (lines.length <= maxLines) {
+    return message
+  }
   const hidden = lines.length - maxLines
   return [...lines.slice(0, maxLines), `…${hidden} more lines`].join('\n')
 }
@@ -153,9 +159,13 @@ function escape(text: string): string {
 
 // Each unit is chosen after rounding, so 59.96s shows as 1m 0s, not 60.0s
 export function formatDuration(ms: number): string {
-  if (Math.round(ms) < 1000) return `${Math.round(ms)}ms`
+  if (Math.round(ms) < 1000) {
+    return `${Math.round(ms)}ms`
+  }
   const tenths = Math.round(ms / 100)
-  if (tenths < 600) return `${(tenths / 10).toFixed(1)}s`
+  if (tenths < 600) {
+    return `${(tenths / 10).toFixed(1)}s`
+  }
   const seconds = Math.round(ms / 1000)
   return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
 }

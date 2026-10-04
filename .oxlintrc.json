@@ -18,7 +18,6 @@
     // Each of these picks one of two equally good styles, and the code uses
     // the other one
     "capitalized-comments": "off", // wrapped comments continue in lower case
-    "curly": "off",
     "func-style": "off", // functions are declared, not assigned
     "no-continue": "off",
     "no-ternary": "off",

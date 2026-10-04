@@ -43,10 +43,14 @@ export async function run(): Promise<void> {
       unparsable > 0 &&
         `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
     ].filter(Boolean)
-    if (problems.length > 0) core.setFailed(problems.join(' and '))
+    if (problems.length > 0) {
+      core.setFailed(problems.join(' and '))
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    }
   }
 }
 
@@ -80,10 +84,14 @@ async function readReport(file: ReportFile): Promise<TestReport> {
 // Each job in a matrix finds reports with the same names, so without a name of
 // their own they would overwrite each other's statuses
 function jobName(name: string, matrix: string): string {
-  if (name) return name
+  if (name) {
+    return name
+  }
   try {
     const values: unknown = JSON.parse(matrix)
-    if (typeof values !== 'object' || values === null) return ''
+    if (typeof values !== 'object' || values === null) {
+      return ''
+    }
     return Object.values(values)
       .map((value) =>
         typeof value === 'string' ? value : JSON.stringify(value)

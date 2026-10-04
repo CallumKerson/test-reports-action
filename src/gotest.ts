@@ -50,7 +50,9 @@ export function parseGoTest(ndjson: string): TestCase[] {
 
   for (const line of ndjson.split('\n')) {
     const event = parseEvent(line)
-    if (!event) continue
+    if (!event) {
+      continue
+    }
     events += 1
 
     if (event.ImportPath) {
@@ -62,7 +64,9 @@ export function parseGoTest(ndjson: string): TestCase[] {
       }
       continue
     }
-    if (!event.Package) continue
+    if (!event.Package) {
+      continue
+    }
 
     if (event.Test) {
       const id = key(event.Package, event.Test)
@@ -83,7 +87,9 @@ export function parseGoTest(ndjson: string): TestCase[] {
       output: []
     }
     packages.set(event.Package, pkg)
-    if (event.Action === 'output') pkg.output.push(event.Output ?? '')
+    if (event.Action === 'output') {
+      pkg.output.push(event.Output ?? '')
+    }
     if (event.Action === 'fail') {
       pkg.failed = true
       pkg.failedBuild = event.FailedBuild
@@ -129,14 +135,18 @@ function packageFailures(
 
 function parseEvent(line: string): Event | undefined {
   // Build errors go to stderr, which is sometimes redirected into the file
-  if (!line.startsWith('{')) return undefined
+  if (!line.startsWith('{')) {
+    return undefined
+  }
   let fields: unknown
   try {
     fields = JSON.parse(line)
   } catch {
     return undefined
   }
-  if (!isRecord(fields)) return undefined
+  if (!isRecord(fields)) {
+    return undefined
+  }
   return {
     Action: text(fields.Action),
     Package: text(fields.Package),
@@ -178,7 +188,9 @@ function findParents(all: Test[]): {
     for (let i = 1; i < parts.length; i += 1) {
       const parent = key(test.pkg, parts.slice(0, i).join('/'))
       parents.add(parent)
-      if (status(test) === 'failed') failedParents.add(parent)
+      if (status(test) === 'failed') {
+        failedParents.add(parent)
+      }
     }
   }
   return { parents, failedParents }
@@ -192,7 +204,9 @@ function isReported(
   failedParents: Set<string>
 ): boolean {
   const name = key(test.pkg, test.name)
-  if (!parents.has(name)) return true
+  if (!parents.has(name)) {
+    return true
+  }
   return status(test) === 'failed' && !failedParents.has(name)
 }
 
@@ -214,7 +228,9 @@ function toCase(test: Test): TestCase {
   }
   if (result.status === 'failed') {
     const message = clean(test.output)
-    if (message) result.message = message
+    if (message) {
+      result.message = message
+    }
   }
   return result
 }
