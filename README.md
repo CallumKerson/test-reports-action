@@ -52,7 +52,9 @@ are still summarised and given statuses.
 
 Setting commit statuses needs the `statuses: write` permission. Without it,
 for example on pull requests from forks, the action warns and still writes the
-summary.
+summary. To set them on pull requests from forks, upload the reports as an
+artifact, then download them and run the action in a `workflow_run` workflow,
+which sets the statuses on the commit that triggered it.
 
 Go needs the `-json` flag: plain `go test` output can't be parsed.
 
