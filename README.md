@@ -122,5 +122,4 @@ Releases are made with [release-please](https://github.com/googleapis/release-pl
 from [conventional commits](https://www.conventionalcommits.org).
 Every push to `main` updates a release PR with the next version and changelog,
 and the release workflow commits a fresh build of `dist/` to it.
-Merging the release PR tags the release, as in `v0.2.0`, and moves the major
-version tag, such as `v0`, to it.
+Merging the release PR tags the release, as in `v0.2.0`.
