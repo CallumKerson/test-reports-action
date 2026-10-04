@@ -24,7 +24,6 @@
     "sort-imports": "off", // packages, then node:, then local files
     "sort-keys": "off", // keys follow the shape of the data
     "import/consistent-type-specifier-style": "off", // type imports are inline
-    "import/group-exports": "off",
 
     // These conflict: modules export named functions, so there is never a
     // single default to prefer

@@ -1,16 +1,16 @@
 import { vi } from 'vitest'
 
-export const createCommitStatus = vi.fn<(params: object) => Promise<unknown>>(
+const createCommitStatus = vi.fn<(params: object) => Promise<unknown>>(
   async () => ({})
 )
 
-export const getOctokit = vi.fn<
+const getOctokit = vi.fn<
   () => { rest: { repos: { createCommitStatus: typeof createCommitStatus } } }
 >(() => ({
   rest: { repos: { createCommitStatus } }
 }))
 
-export const context = {
+const context = {
   payload: {} as {
     pull_request?: { head: { sha: string } }
     workflow_run?: { head_sha: string }
@@ -21,3 +21,5 @@ export const context = {
   runId: 42,
   job: 'test'
 }
+
+export { context, createCommitStatus, getOctokit }

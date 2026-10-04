@@ -135,7 +135,7 @@ function renderReport(report: TestReport, detail: Detail): string {
   return [...heading, ...table].join('\n')
 }
 
-export function renderSummary(reports: TestReport[], detail: Detail): string {
+function renderSummary(reports: TestReport[], detail: Detail): string {
   return [
     '<h2>Test results</h2>',
     ...reports.map((report) => renderReport(report, detail))
@@ -149,7 +149,7 @@ export function renderSummary(reports: TestReport[], detail: Detail): string {
  * A summary too big for GitHub is cut short, and the full one is uploaded as
  * an artifact, kept for retentionDays, and linked from it.
  */
-export async function writeSummary(
+async function writeSummary(
   reports: TestReport[],
   retentionDays: number
 ): Promise<void> {
@@ -171,5 +171,4 @@ export async function writeSummary(
   await summary.addRaw(shown, true).write()
 }
 
-export { formatDuration, maxSummaryBytes }
-export type { Detail }
+export { formatDuration, maxSummaryBytes, renderSummary, writeSummary }
