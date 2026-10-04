@@ -21,24 +21,24 @@ vi.mock(import('../src/artifact.js'), () => ({ uploadFullSummary }))
 vi.setConfig({ testTimeout: 5000 })
 
 const passed: TestCase = {
-  suite: 'math',
+  durationMs: 1200,
   name: 'adds',
   status: 'passed',
-  durationMs: 1200
+  suite: 'math'
 }
 
 const failed: TestCase = {
-  suite: 'math',
+  durationMs: 300,
+  message: 'Expected: <2>\nReceived: 3',
   name: 'divides',
   status: 'failed',
-  durationMs: 300,
-  message: 'Expected: <2>\nReceived: 3'
+  suite: 'math'
 }
 
 const report = (name: string, cases: TestCase[]): TestReport => ({
+  cases,
   name,
-  path: `${name}.junit.xml`,
-  cases
+  path: `${name}.junit.xml`
 })
 
 describe('summary.ts', () => {
@@ -48,7 +48,7 @@ describe('summary.ts', () => {
     const html = renderSummary(
       [
         report('unit', [passed, failed]),
-        report('go', [{ ...passed, status: 'skipped', durationMs: 0 }])
+        report('go', [{ ...passed, durationMs: 0, status: 'skipped' }])
       ],
       'full'
     )
@@ -68,8 +68,8 @@ describe('summary.ts', () => {
       [
         report('unit', [
           passed,
-          { ...passed, name: 'subtracts', durationMs: 300 },
-          { ...passed, suite: 'text', status: 'skipped', durationMs: 0 }
+          { ...passed, durationMs: 300, name: 'subtracts' },
+          { ...passed, durationMs: 0, status: 'skipped', suite: 'text' }
         ])
       ],
       'full'
@@ -129,7 +129,7 @@ describe('summary.ts', () => {
     const html = renderSummary(
       [
         report('go', [
-          { suite: 'pkg', name: 'pkg', status: 'failed', durationMs: 0 }
+          { durationMs: 0, name: 'pkg', status: 'failed', suite: 'pkg' }
         ])
       ],
       'full'
@@ -155,8 +155,8 @@ describe('summary.ts', () => {
     ).join('\n')
     const failures = Array.from({ length: 53 }, (_value, index) => ({
       ...failed,
-      name: `test ${index}`,
-      message
+      message,
+      name: `test ${index}`
     }))
 
     it('renders every failure in full', () => {
@@ -196,8 +196,8 @@ describe('summary.ts', () => {
     const big = (count: number): TestCase[] =>
       Array.from({ length: count }, (_value, index) => ({
         ...failed,
-        name: `test ${index}`,
-        message: 'x'.repeat(1024)
+        message: 'x'.repeat(1024),
+        name: `test ${index}`
       }))
     const written = (): string => summary.addRaw.mock.calls[0][0]
 

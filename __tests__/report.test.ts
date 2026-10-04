@@ -9,22 +9,22 @@ describe('report.ts', () => {
 
     expect(
       countResults([
-        { suite: 's', name: 'a', status: 'passed', durationMs: 5 },
-        { suite: 's', name: 'b', status: 'failed', durationMs: 10 },
-        { suite: 's', name: 'c', status: 'skipped', durationMs: 0 },
-        { suite: 's', name: 'd', status: 'passed', durationMs: 1.5 }
+        { durationMs: 5, name: 'a', status: 'passed', suite: 's' },
+        { durationMs: 10, name: 'b', status: 'failed', suite: 's' },
+        { durationMs: 0, name: 'c', status: 'skipped', suite: 's' },
+        { durationMs: 1.5, name: 'd', status: 'passed', suite: 's' }
       ])
-    ).toStrictEqual({ passed: 2, failed: 1, skipped: 1, durationMs: 16.5 })
+    ).toStrictEqual({ durationMs: 16.5, failed: 1, passed: 2, skipped: 1 })
   })
 
   it('counts nothing for no cases', () => {
     expect.hasAssertions()
 
     expect(countResults([])).toStrictEqual({
-      passed: 0,
+      durationMs: 0,
       failed: 0,
-      skipped: 0,
-      durationMs: 0
+      passed: 0,
+      skipped: 0
     })
   })
 })

@@ -34,11 +34,11 @@ describe('main.ts', () => {
     inputs: Record<string, string> = {}
   ): Promise<string> => {
     const workspace = await mkdtemp(path.join(tmpdir(), 'main-'))
-    onTestFinished(async () => rm(workspace, { recursive: true, force: true }))
+    onTestFinished(async () => rm(workspace, { force: true, recursive: true }))
     vi.stubEnv('GITHUB_WORKSPACE', workspace)
     getInput.mockImplementation(
       (name) =>
-        ({ token: 'token', 'retention-days': '7', ...inputs })[name] ?? ''
+        ({ 'retention-days': '7', token: 'token', ...inputs })[name] ?? ''
     )
     return workspace
   }
@@ -50,7 +50,7 @@ describe('main.ts', () => {
   ): Promise<ReportFile> => {
     const file = path.join(workspace, `${name}.junit.xml`)
     await writeFile(file, xml)
-    return { file, path: `${name}.junit.xml`, name, parse: parseJUnit }
+    return { file, name, parse: parseJUnit, path: `${name}.junit.xml` }
   }
 
   it('reports passing tests without failing', async () => {
@@ -70,9 +70,9 @@ describe('main.ts', () => {
     expect(findReports).toHaveBeenCalledWith(workspace)
     const reports = [
       {
+        cases: [{ durationMs: 0, name: 'a', status: 'passed', suite: 's' }],
         name: 'unit',
-        path: 'unit.junit.xml',
-        cases: [{ suite: 's', name: 'a', status: 'passed', durationMs: 0 }]
+        path: 'unit.junit.xml'
       }
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
@@ -156,23 +156,23 @@ describe('main.ts', () => {
     )
     const reports = [
       {
-        name: 'bad',
-        path: 'bad.junit.xml',
         cases: [
           {
-            suite: '',
+            durationMs: 0,
+            message: 'not a JUnit report: no <testsuite> element',
             name: 'Could not parse report',
             status: 'failed',
-            durationMs: 0,
-            message: 'not a JUnit report: no <testsuite> element'
+            suite: ''
           }
         ],
-        parseError: 'not a JUnit report: no <testsuite> element'
+        name: 'bad',
+        parseError: 'not a JUnit report: no <testsuite> element',
+        path: 'bad.junit.xml'
       },
       {
+        cases: [{ durationMs: 0, name: 'a', status: 'passed', suite: '' }],
         name: 'good',
-        path: 'good.junit.xml',
-        cases: [{ suite: '', name: 'a', status: 'passed', durationMs: 0 }]
+        path: 'good.junit.xml'
       }
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
@@ -221,7 +221,7 @@ describe('main.ts', () => {
   ])('names the job after %s', async (_title, name, matrix, expected) => {
     expect.hasAssertions()
 
-    const workspace = await setUp({ name, matrix })
+    const workspace = await setUp({ matrix, name })
     findReports.mockResolvedValue([
       await report(
         workspace,

@@ -4,13 +4,13 @@ import { XMLParser } from 'fast-xml-parser'
 type XmlNode = Record<string, unknown>
 
 const parser = new XMLParser({
-  ignoreAttributes: false,
   attributeNamePrefix: '@',
-  // Keep text and attributes as written, so names like "1" stay strings
-  parseTagValue: false,
-  parseAttributeValue: false,
+  ignoreAttributes: false,
   isArray: (tagName): boolean =>
-    ['testsuite', 'testcase', 'failure', 'error', 'skipped'].includes(tagName)
+    ['testsuite', 'testcase', 'failure', 'error', 'skipped'].includes(tagName),
+  // Keep text and attributes as written, so names like "1" stay strings
+  parseAttributeValue: false,
+  parseTagValue: false
 })
 
 function attribute(node: XmlNode, name: string): string {
@@ -52,17 +52,17 @@ function parseOutcome(testCase: XmlNode): Pick<TestCase, 'status' | 'message'> {
     return { status: testCase.skipped ? 'skipped' : 'passed' }
   }
   const message = problems.map(describe).filter(Boolean).join('\n\n')
-  return message ? { status: 'failed', message } : { status: 'failed' }
+  return message ? { message, status: 'failed' } : { status: 'failed' }
 }
 
 function parseCase(testCase: XmlNode, suiteName: string): TestCase {
   const name = attribute(testCase, 'name')
   const className = attribute(testCase, 'classname')
   return {
+    durationMs: seconds(attribute(testCase, 'time')) * 1000,
+    name,
     // Some reporters, like jest-junit, repeat the test name as the class name
     suite: className && className !== name ? className : suiteName,
-    name,
-    durationMs: seconds(attribute(testCase, 'time')) * 1000,
     ...parseOutcome(testCase)
   }
 }

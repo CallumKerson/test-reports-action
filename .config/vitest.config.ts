@@ -4,12 +4,6 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    // This config lives in .config/, so resolve paths from the repository root
-    root: new URL('..', import.meta.url).pathname,
-    // Puts back each mock's own implementation, and each stubbed environment
-    // variable, after every test
-    mockReset: true,
-    unstubEnvs: true,
     coverage: {
       enabled: true,
       include: ['src/**'],
@@ -17,8 +11,14 @@ export default defineConfig({
       reporter: ['json-summary', 'text', 'lcov']
     },
     include: ['__tests__/**/*.test.ts'],
+    // Puts back each mock's own implementation after every test
+    mockReset: true,
     // CI runs this action on the JUnit report, to test it on real output
     outputFile: { junit: 'reports/vitest.junit.xml' },
-    reporters: ['verbose', 'junit']
+    reporters: ['verbose', 'junit'],
+    // This config lives in .config/, so resolve paths from the repository root
+    root: new URL('..', import.meta.url).pathname,
+    // Puts back each stubbed environment variable after every test
+    unstubEnvs: true
   }
 })

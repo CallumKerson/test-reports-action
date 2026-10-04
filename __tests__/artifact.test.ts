@@ -26,7 +26,7 @@ describe('artifact.ts', () => {
   // The summary is written to a directory in the runner's temp directory
   const runnerTemp = async (): Promise<void> => {
     const directory = await mkdtemp(path.join(tmpdir(), 'artifact-'))
-    onTestFinished(async () => rm(directory, { recursive: true, force: true }))
+    onTestFinished(async () => rm(directory, { force: true, recursive: true }))
     vi.stubEnv('RUNNER_TEMP', directory)
   }
 

@@ -61,21 +61,21 @@ describe('gotest.ts', () => {
     const cases = parseGoTest(
       events(
         { Action: 'run', Package: 'p', Test: 'TestA' },
-        { Action: 'pass', Package: 'p', Test: 'TestA', Elapsed: 0.25 },
-        { Action: 'output', Package: 'p', Output: 'panic: TestMain broke\n' },
-        { Action: 'output', Package: 'p', Output: '\tmain.go:3 +0x1\n' },
-        { Action: 'fail', Package: 'p', Elapsed: 1.5 }
+        { Action: 'pass', Elapsed: 0.25, Package: 'p', Test: 'TestA' },
+        { Action: 'output', Output: 'panic: TestMain broke\n', Package: 'p' },
+        { Action: 'output', Output: '\tmain.go:3 +0x1\n', Package: 'p' },
+        { Action: 'fail', Elapsed: 1.5, Package: 'p' }
       )
     )
 
     expect(cases).toStrictEqual([
-      { suite: 'p', name: 'TestA', status: 'passed', durationMs: 250 },
+      { durationMs: 250, name: 'TestA', status: 'passed', suite: 'p' },
       {
-        suite: 'p',
+        durationMs: 1500,
+        message: 'panic: TestMain broke\n\tmain.go:3 +0x1',
         name: 'p',
         status: 'failed',
-        durationMs: 1500,
-        message: 'panic: TestMain broke\n\tmain.go:3 +0x1'
+        suite: 'p'
       }
     ])
   })
@@ -88,21 +88,21 @@ describe('gotest.ts', () => {
         { Action: 'run', Package: 'p', Test: 'TestSlow' },
         {
           Action: 'output',
+          Output: 'panic: test timed out\n',
           Package: 'p',
-          Test: 'TestSlow',
-          Output: 'panic: test timed out\n'
+          Test: 'TestSlow'
         },
-        { Action: 'fail', Package: 'p', Elapsed: 600 }
+        { Action: 'fail', Elapsed: 600, Package: 'p' }
       )
     )
 
     expect(cases).toStrictEqual([
       {
-        suite: 'p',
+        durationMs: 0,
+        message: 'panic: test timed out',
         name: 'TestSlow',
         status: 'failed',
-        durationMs: 0,
-        message: 'panic: test timed out'
+        suite: 'p'
       }
     ])
   })
@@ -137,7 +137,7 @@ describe('gotest.ts', () => {
     expect(
       parseGoTest(events({ Action: 'fail', Package: 'p', Test: 'TestA' }))
     ).toStrictEqual([
-      { suite: 'p', name: 'TestA', status: 'failed', durationMs: 0 }
+      { durationMs: 0, name: 'TestA', status: 'failed', suite: 'p' }
     ])
   })
 
@@ -151,13 +151,13 @@ describe('gotest.ts', () => {
         events(
           { Action: 'start', Package: 'p' },
           { Action: 'pass', Package: 'p', Test: 'TestA' },
-          { Action: 'pass', Package: 'p', Elapsed: 0.1 }
+          { Action: 'pass', Elapsed: 0.1, Package: 'p' }
         )
       ].join('\n')
     )
 
     expect(cases).toStrictEqual([
-      { suite: 'p', name: 'TestA', status: 'passed', durationMs: 0 }
+      { durationMs: 0, name: 'TestA', status: 'passed', suite: 'p' }
     ])
   })
 
