@@ -1,6 +1,6 @@
-export type TestStatus = 'passed' | 'failed' | 'skipped'
+type TestStatus = 'passed' | 'failed' | 'skipped'
 
-export interface TestCase {
+interface TestCase {
   suite: string
   name: string
   status: TestStatus
@@ -8,7 +8,7 @@ export interface TestCase {
   message?: string
 }
 
-export interface TestReport {
+interface TestReport {
   name: string
   path: string
   cases: TestCase[]
@@ -16,14 +16,14 @@ export interface TestReport {
   parseError?: string
 }
 
-export interface TestCounts {
+interface TestCounts {
   passed: number
   failed: number
   skipped: number
   durationMs: number
 }
 
-export function countResults(cases: TestCase[]): TestCounts {
+function countResults(cases: TestCase[]): TestCounts {
   const counts = { passed: 0, failed: 0, skipped: 0, durationMs: 0 }
   for (const testCase of cases) {
     counts[testCase.status] += 1
@@ -35,9 +35,12 @@ export function countResults(cases: TestCase[]): TestCounts {
 /**
  * Describes counts in words, such as `3 passed, 1 skipped`.
  */
-export function describeCounts(counts: TestCounts): string {
+function describeCounts(counts: TestCounts): string {
   const parts = (['passed', 'failed', 'skipped'] as const)
     .filter((status) => counts[status] > 0)
     .map((status) => `${counts[status]} ${status}`)
   return parts.length > 0 ? parts.join(', ') : 'No tests'
 }
+
+export { countResults, describeCounts }
+export type { TestCase, TestReport, TestStatus }
