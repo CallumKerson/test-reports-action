@@ -13,7 +13,7 @@ const { parseJUnit } = await import('../src/junit.js')
 describe('discover.ts', () => {
   let workspace: string
 
-  const files = async (...names: string[]) => {
+  const files = async (...names: string[]): Promise<void> => {
     await Promise.all(
       names.map(async (name) => {
         const file = path.join(workspace, name)

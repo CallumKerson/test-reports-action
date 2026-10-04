@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { parseJUnit } from '../src/junit.js'
 
-const fixture = (name: string) =>
+const fixture = async (name: string): Promise<string> =>
   readFile(new URL(`../__fixtures__/junit/${name}`, import.meta.url), 'utf8')
 
 describe('junit.ts', () => {

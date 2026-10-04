@@ -9,7 +9,7 @@ const parser = new XMLParser({
   // Keep text and attributes as written, so names like "1" stay strings
   parseTagValue: false,
   parseAttributeValue: false,
-  isArray: (tagName) =>
+  isArray: (tagName): boolean =>
     ['testsuite', 'testcase', 'failure', 'error', 'skipped'].includes(tagName)
 })
 

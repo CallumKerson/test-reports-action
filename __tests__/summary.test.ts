@@ -136,13 +136,13 @@ describe('summary.ts', () => {
 
   describe('writeSummary', () => {
     // Each failure renders to just over 1 KiB, in full or cut short
-    const big = (count: number) =>
+    const big = (count: number): TestCase[] =>
       Array.from({ length: count }, (_, i) => ({
         ...failed,
         name: `test ${i}`,
         message: 'x'.repeat(1024)
       }))
-    const written = () => core.summary.addRaw.mock.calls[0][0]
+    const written = (): string => core.summary.addRaw.mock.calls[0][0]
 
     it('Writes the full summary when it fits', async () => {
       await writeSummary([report('unit', [passed, failed])], 7)

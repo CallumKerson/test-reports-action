@@ -56,8 +56,8 @@ function uniqueName(
   reports: { path: string; suffix: string }[]
 ): string {
   const candidates = [
-    (file: string, ext: string) => path.posix.basename(file, ext),
-    (file: string, ext: string) => file.slice(0, -ext.length)
+    (file: string, ext: string): string => path.posix.basename(file, ext),
+    (file: string, ext: string): string => file.slice(0, -ext.length)
   ]
   for (const candidate of candidates) {
     const name = candidate(relative, suffix)

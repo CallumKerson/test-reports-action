@@ -26,7 +26,7 @@ export async function setStatuses(
 
   try {
     await Promise.all(
-      reports.map((report) => {
+      reports.map(async (report) => {
         const counts = countResults(report.cases)
         return octokit.rest.repos.createCommitStatus({
           ...context.repo,
