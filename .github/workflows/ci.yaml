@@ -28,12 +28,14 @@ jobs:
       # Keep going when one check fails, so every check writes its report
       - run: mise run --continue-on-error ci
       # Committed dist/ is the last release's build, so report with this
-      # branch's code instead
+      # branch's code instead. That build is only in the workspace, so this
+      # step needs ./ rather than the self-repository $/, which loads the
+      # committed dist/
       - if: ${{ !cancelled() }}
         run: mise run package
       - name: Report hk and jest results with this action
         if: ${{ !cancelled() }}
-        uses: ./
+        uses: ./ # zizmor: ignore[self-repository]
 
   # Checks on a real runner that each leg of a matrix gets its own statuses,
   # from the matrix default in action.yaml that no unit test can evaluate
@@ -57,7 +59,8 @@ jobs:
         run: |
           mkdir -p reports
           echo '<testsuite name="matrix"><testcase name="passes"/></testsuite>' > reports/matrix.junit.xml
-      - uses: ./
+      # ./ runs the build from the step above, as in the ci job
+      - uses: ./ # zizmor: ignore[self-repository]
       - name: Check the status is named after the matrix leg
         env:
           GH_TOKEN: ${{ github.token }}

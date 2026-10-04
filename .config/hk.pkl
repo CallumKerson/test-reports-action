@@ -24,6 +24,7 @@ local linters = new Mapping<String, Step> {
     ["newlines"] = Builtins.newlines
     ["trailing_whitespace"] = Builtins.trailing_whitespace
     ["typos"] = Builtins.typos
+    ["zizmor"] = Builtins.zizmor
 }
 
 hooks {
