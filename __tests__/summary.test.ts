@@ -1,15 +1,22 @@
 import { describe, expect, it, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import type { TestCase, TestReport } from '../src/report.js'
+import {
+  formatDuration,
+  maxSummaryBytes,
+  renderSummary,
+  writeSummary
+} from '../src/summary.js'
 
-const uploadFullSummary =
-  vi.fn<(html: string, retentionDays: number) => Promise<string | undefined>>()
+const { uploadFullSummary } = vi.hoisted(() => ({
+  uploadFullSummary:
+    vi.fn<
+      (html: string, retentionDays: number) => Promise<string | undefined>
+    >()
+}))
 
-vi.doMock(import('@actions/core'), () => core)
-vi.doMock(import('../src/artifact.js'), () => ({ uploadFullSummary }))
-
-const { formatDuration, maxSummaryBytes, renderSummary, writeSummary } =
-  await import('../src/summary.js')
+vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
+vi.mock(import('../src/artifact.js'), () => ({ uploadFullSummary }))
 
 const passed: TestCase = {
   suite: 'math',
@@ -164,7 +171,7 @@ describe('summary.ts', () => {
     })
   })
 
-  describe('writeSummary', () => {
+  describe('writing the summary', () => {
     // Each failure renders to just over 1 KiB, in full or cut short
     const big = (count: number): TestCase[] =>
       Array.from({ length: count }, (_value, index) => ({

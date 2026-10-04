@@ -2,11 +2,13 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 import type { TestCase, TestReport } from '../src/report.js'
+import { setStatuses } from '../src/status.js'
 
-vi.doMock(import('@actions/core'), () => core)
-vi.doMock(import('@actions/github'), () => github)
-
-const { setStatuses } = await import('../src/status.js')
+vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
+vi.mock(
+  import('@actions/github'),
+  async () => import('../__fixtures__/github.js')
+)
 
 const testCase = (status: TestCase['status']): TestCase => ({
   suite: 's',

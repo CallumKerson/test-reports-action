@@ -4,13 +4,17 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import * as artifact from '../__fixtures__/artifact.js'
 import * as core from '../__fixtures__/core.js'
-import * as github from '../__fixtures__/github.js'
+import { uploadFullSummary } from '../src/artifact.js'
 
-vi.doMock(import('@actions/artifact'), () => artifact)
-vi.doMock(import('@actions/core'), () => core)
-vi.doMock(import('@actions/github'), () => github)
-
-const { uploadFullSummary } = await import('../src/artifact.js')
+vi.mock(
+  import('@actions/artifact'),
+  async () => import('../__fixtures__/artifact.js')
+)
+vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
+vi.mock(
+  import('@actions/github'),
+  async () => import('../__fixtures__/github.js')
+)
 
 const conflict = new Error(
   'Failed to CreateArtifact: Received non-retryable error: Failed request: (409) Conflict: an artifact with this name already exists on the workflow run'

@@ -8,23 +8,23 @@ import path from 'node:path'
 import * as core from '../__fixtures__/core.js'
 import type { ReportFile } from '../src/discover.js'
 import type { TestReport } from '../src/report.js'
+import { run } from '../src/main.js'
+import { parseJUnit } from '../src/junit.js'
 
-const findReports = vi.fn<(workspace: string) => Promise<ReportFile[]>>()
-const setStatuses =
-  vi.fn<
-    (token: string, reports: TestReport[], jobName: string) => Promise<void>
-  >()
-const writeSummary =
-  vi.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
+const { findReports, setStatuses, writeSummary } = vi.hoisted(() => ({
+  findReports: vi.fn<(workspace: string) => Promise<ReportFile[]>>(),
+  setStatuses:
+    vi.fn<
+      (token: string, reports: TestReport[], jobName: string) => Promise<void>
+    >(),
+  writeSummary:
+    vi.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
+}))
 
-// Mocks should be declared before the module being tested is imported.
-vi.doMock(import('@actions/core'), () => core)
-vi.doMock(import('../src/discover.js'), () => ({ findReports }))
-vi.doMock(import('../src/status.js'), () => ({ setStatuses }))
-vi.doMock(import('../src/summary.js'), () => ({ writeSummary }))
-
-const { run } = await import('../src/main.js')
-const { parseJUnit } = await import('../src/junit.js')
+vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
+vi.mock(import('../src/discover.js'), () => ({ findReports }))
+vi.mock(import('../src/status.js'), () => ({ setStatuses }))
+vi.mock(import('../src/summary.js'), () => ({ writeSummary }))
 
 describe('main.ts', () => {
   // Each test gets a workspace of its own, and the action's inputs
