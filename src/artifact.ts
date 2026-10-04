@@ -18,38 +18,52 @@ export async function uploadFullSummary(
   html: string,
   retentionDays: number
 ): Promise<string | undefined> {
-  const { context } = github
   const directory = await mkdtemp(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )
-  const base = `test-results-${context.job}`
+  const base = `test-results-${github.context.job}`
+  return upload(directory, base, page(html), retentionDays, 1)
+}
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // Unzipped uploads are named after the file
-    const file = path.join(
-      directory,
-      attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
+// Each attempt depends on whether the name before it was taken, so they run
+// one after another
+async function upload(
+  directory: string,
+  base: string,
+  content: string,
+  retentionDays: number,
+  attempt: number
+): Promise<string | undefined> {
+  if (attempt > maxAttempts) {
+    core.warning(
+      `Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`
     )
-    await writeFile(file, page(html))
-    try {
-      const { id } = await artifact.uploadArtifact(
-        path.basename(file),
-        [file],
-        directory,
-        { retentionDays, skipArchive: true }
-      )
-      return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      if (/\(409\)/.test(message)) continue
-      core.warning(`Could not upload the full summary: ${message}`)
-      return undefined
-    }
+    return undefined
   }
-  core.warning(
-    `Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`
+
+  const { context } = github
+  // Unzipped uploads are named after the file
+  const file = path.join(
+    directory,
+    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
   )
-  return undefined
+  await writeFile(file, content)
+  try {
+    const { id } = await artifact.uploadArtifact(
+      path.basename(file),
+      [file],
+      directory,
+      { retentionDays, skipArchive: true }
+    )
+    return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (/\(409\)/.test(message)) {
+      return upload(directory, base, content, retentionDays, attempt + 1)
+    }
+    core.warning(`Could not upload the full summary: ${message}`)
+    return undefined
+  }
 }
 
 function page(html: string): string {

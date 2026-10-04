@@ -17,9 +17,11 @@ const conflict = new Error(
 
 describe('artifact.ts', () => {
   afterEach(async () => {
-    for (const [, [file]] of artifact.uploadArtifact.mock.calls) {
-      await rm(path.dirname(file), { recursive: true, force: true })
-    }
+    await Promise.all(
+      artifact.uploadArtifact.mock.calls.map(([, [file]]) =>
+        rm(path.dirname(file), { recursive: true, force: true })
+      )
+    )
   })
 
   it('Uploads the summary as an unzipped HTML page and links to it', async () => {

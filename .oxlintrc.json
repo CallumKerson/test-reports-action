@@ -9,7 +9,8 @@
   },
   "categories": {
     "correctness": "error",
-    "suspicious": "error"
+    "suspicious": "error",
+    "perf": "error"
   },
   "ignorePatterns": ["dist/**", "coverage/**"]
 }
