@@ -38,8 +38,6 @@
     // Arbitrary limits that would split code for no reader's benefit
     "no-magic-numbers": "off", // test data, and units such as ms per second
 
-    // Helpers are declared below the functions that call them
-    "no-use-before-define": "off",
     // TypeScript's optional values are undefined, not null
     "no-undefined": "off",
     // An action reads its inputs and runner settings from the environment

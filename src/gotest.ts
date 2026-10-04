@@ -42,47 +42,37 @@ const statuses: Record<string, TestStatus> = {
 // already shown elsewhere
 const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/
 
-/**
- * Parses the output of `go test -json` into test cases.
- *
- * Only leaf tests are kept, so a table test counts once per subtest. A package
- * that fails without a failing test, such as from a build error, becomes one
- * failed case named after the package.
- */
-export function parseGoTest(ndjson: string): TestCase[] {
-  const events = ndjson
-    .split('\n')
-    .map(parseEvent)
-    .filter((event) => event !== undefined)
-  if (events.length === 0 && ndjson.trim()) {
-    throw new Error('not a go test -json report: no JSON events')
-  }
-
-  const { tests, packages, builds } = collect(events)
-  const all = [...tests.values()]
-  const { parents, failedParents } = findParents(all)
-  const cases = all
-    .filter((test) => isReported(test, parents, failedParents))
-    .map(toCase)
-  const failedPackages = new Set(
-    cases
-      .filter((testCase) => testCase.status === 'failed')
-      .map((testCase) => testCase.suite)
-  )
-
-  return [...cases, ...packageFailures(packages, builds, failedPackages)]
+function getOrAdd<Value>(
+  map: Map<string, Value>,
+  id: string,
+  create: () => Value
+): Value {
+  const value = map.get(id) ?? create()
+  map.set(id, value)
+  return value
 }
 
-function collect(events: Event[]): Results {
-  const results: Results = {
-    tests: new Map(),
-    packages: new Map(),
-    builds: new Map()
+function applyEvent(test: Test, event: Event): void {
+  if (event.Action === 'output') {
+    test.output.push(event.Output ?? '')
+  } else if (event.Action && event.Action in statuses) {
+    test.status = statuses[event.Action]
+    test.elapsed = event.Elapsed ?? 0
   }
-  for (const event of events) {
-    record(results, event)
+}
+
+function applyPackageEvent(pkg: Package, event: Event): void {
+  if (event.Action === 'output') {
+    pkg.output.push(event.Output ?? '')
+  } else if (event.Action === 'fail') {
+    pkg.failed = true
+    pkg.failedBuild = event.FailedBuild
+    pkg.elapsed = event.Elapsed ?? 0
   }
-  return results
+}
+
+function key(pkg: string, name: string): string {
+  return `${pkg}\0${name}`
 }
 
 function record({ tests, packages, builds }: Results, event: Event): void {
@@ -116,14 +106,27 @@ function record({ tests, packages, builds }: Results, event: Event): void {
   }
 }
 
-function getOrAdd<Value>(
-  map: Map<string, Value>,
-  id: string,
-  create: () => Value
-): Value {
-  const value = map.get(id) ?? create()
-  map.set(id, value)
-  return value
+function collect(events: Event[]): Results {
+  const results: Results = {
+    tests: new Map(),
+    packages: new Map(),
+    builds: new Map()
+  }
+  for (const event of events) {
+    record(results, event)
+  }
+  return results
+}
+
+function clean(output: string[]): string {
+  const lines = output
+    .join('')
+    .split('\n')
+    .filter((line) => line.trim() && !noise.test(line))
+  const indent = Math.min(
+    ...lines.map((line) => line.length - line.trimStart().length)
+  )
+  return lines.map((line) => line.slice(indent).trimEnd()).join('\n')
 }
 
 // A package can fail without a failing test, such as from a build error
@@ -146,6 +149,22 @@ function packageFailures(
     })
 }
 
+function parseJson(line: string): unknown {
+  try {
+    return JSON.parse(line)
+  } catch {
+    return undefined
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function text(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
 function parseEvent(line: string): Event | undefined {
   // Build errors go to stderr, which is sometimes redirected into the file
   if (!line.startsWith('{')) {
@@ -166,39 +185,9 @@ function parseEvent(line: string): Event | undefined {
   }
 }
 
-function parseJson(line: string): unknown {
-  try {
-    return JSON.parse(line)
-  } catch {
-    return undefined
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-function text(value: unknown): string | undefined {
-  return typeof value === 'string' ? value : undefined
-}
-
-function applyEvent(test: Test, event: Event): void {
-  if (event.Action === 'output') {
-    test.output.push(event.Output ?? '')
-  } else if (event.Action && event.Action in statuses) {
-    test.status = statuses[event.Action]
-    test.elapsed = event.Elapsed ?? 0
-  }
-}
-
-function applyPackageEvent(pkg: Package, event: Event): void {
-  if (event.Action === 'output') {
-    pkg.output.push(event.Output ?? '')
-  } else if (event.Action === 'fail') {
-    pkg.failed = true
-    pkg.failedBuild = event.FailedBuild
-    pkg.elapsed = event.Elapsed ?? 0
-  }
+// A test with no result was cut off, by a panic or a timeout
+function status(test: Test): TestStatus {
+  return test.status ?? 'failed'
 }
 
 // Collected in one pass, as comparing every test with every other is too slow
@@ -236,15 +225,6 @@ function isReported(
   return status(test) === 'failed' && !failedParents.has(name)
 }
 
-function key(pkg: string, name: string): string {
-  return `${pkg}\0${name}`
-}
-
-// A test with no result was cut off, by a panic or a timeout
-function status(test: Test): TestStatus {
-  return test.status ?? 'failed'
-}
-
 function toCase(test: Test): TestCase {
   const result: TestCase = {
     suite: test.pkg,
@@ -261,13 +241,33 @@ function toCase(test: Test): TestCase {
   return result
 }
 
-function clean(output: string[]): string {
-  const lines = output
-    .join('')
+/**
+ * Parses the output of `go test -json` into test cases.
+ *
+ * Only leaf tests are kept, so a table test counts once per subtest. A package
+ * that fails without a failing test, such as from a build error, becomes one
+ * failed case named after the package.
+ */
+export function parseGoTest(ndjson: string): TestCase[] {
+  const events = ndjson
     .split('\n')
-    .filter((line) => line.trim() && !noise.test(line))
-  const indent = Math.min(
-    ...lines.map((line) => line.length - line.trimStart().length)
+    .map(parseEvent)
+    .filter((event) => event !== undefined)
+  if (events.length === 0 && ndjson.trim()) {
+    throw new Error('not a go test -json report: no JSON events')
+  }
+
+  const { tests, packages, builds } = collect(events)
+  const all = [...tests.values()]
+  const { parents, failedParents } = findParents(all)
+  const cases = all
+    .filter((test) => isReported(test, parents, failedParents))
+    .map(toCase)
+  const failedPackages = new Set(
+    cases
+      .filter((testCase) => testCase.status === 'failed')
+      .map((testCase) => testCase.suite)
   )
-  return lines.map((line) => line.slice(indent).trimEnd()).join('\n')
+
+  return [...cases, ...packageFailures(packages, builds, failedPackages)]
 }
