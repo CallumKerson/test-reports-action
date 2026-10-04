@@ -18,45 +18,52 @@ import { writeSummary } from './summary.js'
  */
 export async function run(): Promise<void> {
   try {
-    const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
-    const files = await findReports(workspace)
-    // Tests often don't run because an earlier step failed, and that step
-    // already shows why
-    if (files.length === 0) {
-      warning(
-        'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
-      )
-      return
-    }
-
-    const retentionDays = parseRetentionDays(getInput('retention-days'))
-    const reports = await Promise.all(files.map(readReport))
-    await writeSummary(reports, retentionDays)
-    await setStatuses(
-      getInput('token', { required: true }),
-      reports,
-      jobName(getInput('name'), getInput('matrix'))
-    )
-
-    // A report that can't be parsed is a failed test in the summary and its
-    // status, but it isn't a test that failed
-    const unparsable = reports.filter((report) => report.parseError).length
-    const failed = reports
-      .filter((report) => !report.parseError)
-      .reduce((total, report) => total + countResults(report.cases).failed, 0)
-    const problems = [
-      failed > 0 && `${failed} ${failed === 1 ? 'test' : 'tests'} failed`,
-      unparsable > 0 &&
-        `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
-    ].filter(Boolean)
-    if (problems.length > 0) {
-      setFailed(problems.join(' and '))
-    }
+    await reportResults()
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {
       setFailed(error.message)
     }
+  }
+}
+
+async function reportResults(): Promise<void> {
+  const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
+  const files = await findReports(workspace)
+  // Tests often don't run because an earlier step failed, and that step
+  // already shows why
+  if (files.length === 0) {
+    warning(
+      'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
+    )
+    return
+  }
+
+  const retentionDays = parseRetentionDays(getInput('retention-days'))
+  const reports = await Promise.all(files.map(readReport))
+  await writeSummary(reports, retentionDays)
+  await setStatuses(
+    getInput('token', { required: true }),
+    reports,
+    jobName(getInput('name'), getInput('matrix'))
+  )
+  failOnProblems(reports)
+}
+
+// A report that can't be parsed is a failed test in the summary and its
+// status, but it isn't a test that failed
+function failOnProblems(reports: TestReport[]): void {
+  const unparsable = reports.filter((report) => report.parseError).length
+  const failed = reports
+    .filter((report) => !report.parseError)
+    .reduce((total, report) => total + countResults(report.cases).failed, 0)
+  const problems = [
+    failed > 0 && `${failed} ${failed === 1 ? 'test' : 'tests'} failed`,
+    unparsable > 0 &&
+      `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
+  ].filter(Boolean)
+  if (problems.length > 0) {
+    setFailed(problems.join(' and '))
   }
 }
 

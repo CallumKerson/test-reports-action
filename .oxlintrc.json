@@ -36,7 +36,6 @@
     "import/no-nodejs-modules": "off",
 
     // Arbitrary limits that would split code for no reader's benefit
-    "max-statements": "off",
     "no-magic-numbers": "off", // test data, and units such as ms per second
 
     // Helpers are declared below the functions that call them
@@ -56,7 +55,9 @@
         // Tests import the source they test from ../src
         "import/no-relative-parent-imports": "off",
         // Mocks mirror the APIs they stand in for
-        "max-params": "off"
+        "max-params": "off",
+        // A describe block holds a statement for each of its tests
+        "max-statements": "off"
       }
     },
     {
