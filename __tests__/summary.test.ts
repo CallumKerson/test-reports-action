@@ -10,9 +10,7 @@ import { summary } from '../__fixtures__/core.js'
 
 const { uploadFullSummary } = vi.hoisted(() => ({
   uploadFullSummary:
-    vi.fn<
-      (html: string, retentionDays: number) => Promise<string | undefined>
-    >()
+    vi.fn<(html: string, retentionDays: number) => Promise<string | null>>()
 }))
 
 vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
@@ -243,7 +241,7 @@ describe('summary.ts', () => {
     it('notes the summary was cut short when the upload fails', async () => {
       expect.hasAssertions()
 
-      uploadFullSummary.mockResolvedValue(undefined)
+      uploadFullSummary.mockResolvedValue(null)
 
       await writeSummary([report('unit', big(1100))], 7)
 

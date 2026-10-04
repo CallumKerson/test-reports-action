@@ -45,12 +45,12 @@ const uploadAttempt = async (
 const upload = async (
   options: Upload,
   attempt: number
-): Promise<string | undefined> => {
+): Promise<string | null> => {
   if (attempt > maxAttempts) {
     warning(
       `Could not upload the full summary: ${options.base}.html to ${options.base}-${maxAttempts}.html are all taken`
     )
-    return undefined
+    return null
   }
 
   try {
@@ -61,7 +61,7 @@ const upload = async (
       return upload(options, attempt + 1)
     }
     warning(`Could not upload the full summary: ${message}`)
-    return undefined
+    return null
   }
 }
 
@@ -78,12 +78,12 @@ ${html}
 /**
  * Uploads the full summary as a standalone HTML page.
  *
- * @returns A link to the artifact, or nothing if it could not be uploaded.
+ * @returns A link to the artifact, or null if it could not be uploaded.
  */
 export const uploadFullSummary = async (
   html: string,
   retentionDays: number
-): Promise<string | undefined> => {
+): Promise<string | null> => {
   const directory = await mkdtemp(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )
