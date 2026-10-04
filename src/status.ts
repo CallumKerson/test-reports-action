@@ -4,15 +4,20 @@ import { countResults, type TestReport } from './report.js'
 
 /**
  * Sets a commit status for each report, linking back to this run.
+ *
+ * Statuses are named `Tests / <report>`, or `Tests (<jobName>) / <report>`
+ * when the job has a name.
  */
 export async function setStatuses(
   token: string,
-  reports: TestReport[]
+  reports: TestReport[],
+  jobName: string
 ): Promise<void> {
   const { context } = github
   const octokit = github.getOctokit(token)
   // On pull requests, context.sha is a merge commit that the PR never shows
   const sha: string = context.payload.pull_request?.head.sha ?? context.sha
+  const prefix = jobName ? `Tests (${jobName})` : 'Tests'
   const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
 
   for (const report of reports) {
@@ -22,7 +27,7 @@ export async function setStatuses(
         ...context.repo,
         sha,
         state: counts.failed > 0 ? 'failure' : 'success',
-        context: `Tests / ${report.name}`,
+        context: `${prefix} / ${report.name}`,
         description: describe(counts),
         target_url: targetUrl
       })

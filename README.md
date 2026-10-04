@@ -37,6 +37,10 @@ is the file name without the format suffix, so `unit.junit.xml` becomes
 added to tell them apart. It also writes the results and the details of every
 failed test to the job summary.
 
+In a matrix job, every job finds reports with the same names, so the matrix
+values are added to each status, as in `Tests (ubuntu-latest, 24) / unit`.
+Set `name` to use something else.
+
 GitHub limits a job summary to 1 MiB. When the full summary is bigger than
 that, the job summary shows at most 50 failures per report and 50 lines of
 each failure's output. The full summary is uploaded as an HTML artifact,
@@ -57,6 +61,7 @@ Go needs the `-json` flag: plain `go test` output can't be parsed.
 | Input            | Description                                | Default               |
 | ---------------- | ------------------------------------------ | --------------------- |
 | `token`          | Token used to set commit statuses          | `${{ github.token }}` |
+| `name`           | Name added to each commit status           | The matrix values     |
 | `retention-days` | Days to keep the full summary artifact for | `7`                   |
 
 ## Development

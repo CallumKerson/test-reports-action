@@ -28,15 +28,19 @@ describe('status.ts', () => {
   })
 
   it('Sets a status for each report on the pushed commit', async () => {
-    await setStatuses('token', [
-      report('unit', [
-        testCase('passed'),
-        testCase('passed'),
-        testCase('skipped')
-      ]),
-      report('go', [testCase('passed'), testCase('failed')]),
-      report('empty', [])
-    ])
+    await setStatuses(
+      'token',
+      [
+        report('unit', [
+          testCase('passed'),
+          testCase('passed'),
+          testCase('skipped')
+        ]),
+        report('go', [testCase('passed'), testCase('failed')]),
+        report('empty', [])
+      ],
+      ''
+    )
 
     expect(github.getOctokit).toHaveBeenCalledWith('token')
     const common = {
@@ -76,10 +80,18 @@ describe('status.ts', () => {
   it('Sets statuses on the head of a pull request', async () => {
     github.context.payload = { pull_request: { head: { sha: 'head-sha' } } }
 
-    await setStatuses('token', [report('unit', [])])
+    await setStatuses('token', [report('unit', [])], '')
 
     expect(github.createCommitStatus).toHaveBeenCalledWith(
       expect.objectContaining({ sha: 'head-sha' })
+    )
+  })
+
+  it('Adds the job name to each status', async () => {
+    await setStatuses('token', [report('unit', [])], 'ubuntu-latest, 24')
+
+    expect(github.createCommitStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ context: 'Tests (ubuntu-latest, 24) / unit' })
     )
   })
 
@@ -90,7 +102,7 @@ describe('status.ts', () => {
       })
     )
 
-    await setStatuses('token', [report('a', []), report('b', [])])
+    await setStatuses('token', [report('a', []), report('b', [])], '')
 
     expect(github.createCommitStatus).toHaveBeenCalledTimes(1)
     expect(core.warning).toHaveBeenCalledWith(
@@ -103,7 +115,7 @@ describe('status.ts', () => {
       Object.assign(new Error('Server Error'), { status: 500 })
     )
 
-    await expect(setStatuses('token', [report('a', [])])).rejects.toThrow(
+    await expect(setStatuses('token', [report('a', [])], '')).rejects.toThrow(
       'Server Error'
     )
   })
