@@ -8,6 +8,8 @@ import { parseJUnit } from '../src/junit.js'
 
 vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
 
+vi.setConfig({ testTimeout: 5000 })
+
 describe('discover.ts', () => {
   const workspaceWith = async (...names: string[]): Promise<string> => {
     const workspace = await mkdtemp(path.join(tmpdir(), 'discover-'))

@@ -10,6 +10,8 @@ vi.mock(
   async () => import('../__fixtures__/github.js')
 )
 
+vi.setConfig({ testTimeout: 5000 })
+
 const testCase = (status: TestCase['status']): TestCase => ({
   suite: 's',
   name: 't',

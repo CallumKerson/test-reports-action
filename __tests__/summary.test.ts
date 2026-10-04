@@ -18,6 +18,8 @@ const { uploadFullSummary } = vi.hoisted(() => ({
 vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
 vi.mock(import('../src/artifact.js'), () => ({ uploadFullSummary }))
 
+vi.setConfig({ testTimeout: 5000 })
+
 const passed: TestCase = {
   suite: 'math',
   name: 'adds',

@@ -26,6 +26,8 @@ vi.mock(import('../src/discover.js'), () => ({ findReports }))
 vi.mock(import('../src/status.js'), () => ({ setStatuses }))
 vi.mock(import('../src/summary.js'), () => ({ writeSummary }))
 
+vi.setConfig({ testTimeout: 5000 })
+
 describe('main.ts', () => {
   // Each test gets a workspace of its own, and the action's inputs
   const setUp = async (

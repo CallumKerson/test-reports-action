@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { parseJUnit } from '../src/junit.js'
+
+vi.setConfig({ testTimeout: 5000 })
 
 const fixture = async (name: string): Promise<string> =>
   readFile(new URL(`../__fixtures__/junit/${name}`, import.meta.url), 'utf8')
