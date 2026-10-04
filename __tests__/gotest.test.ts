@@ -94,6 +94,28 @@ describe('gotest.ts', () => {
     ])
   })
 
+  it('Reports only the deepest failure in nested subtests', () => {
+    const cases = parseGoTest(
+      events(
+        { Action: 'fail', Package: 'p', Test: 'TestA/b/c' },
+        { Action: 'pass', Package: 'p', Test: 'TestA/b/d' },
+        { Action: 'fail', Package: 'p', Test: 'TestA/b' },
+        { Action: 'fail', Package: 'p', Test: 'TestA' },
+        { Action: 'pass', Package: 'p', Test: 'TestAB' },
+        { Action: 'pass', Package: 'q', Test: 'TestA' }
+      )
+    )
+
+    expect(
+      cases.map(({ suite, name, status }) => [suite, name, status])
+    ).toEqual([
+      ['p', 'TestA/b/c', 'failed'],
+      ['p', 'TestA/b/d', 'passed'],
+      ['p', 'TestAB', 'passed'],
+      ['q', 'TestA', 'passed']
+    ])
+  })
+
   it('Leaves out the message of a failure with no output', () => {
     expect(
       parseGoTest(events({ Action: 'fail', Package: 'p', Test: 'TestA' }))

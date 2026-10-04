@@ -65,14 +65,14 @@ export function parseGoTest(ndjson: string): TestCase[] {
     if (!event.Package) continue
 
     if (event.Test) {
-      const key = `${event.Package}\0${event.Test}`
-      const test = tests.get(key) ?? {
+      const id = key(event.Package, event.Test)
+      const test = tests.get(id) ?? {
         pkg: event.Package,
         name: event.Test,
         elapsed: 0,
         output: []
       }
-      tests.set(key, test)
+      tests.set(id, test)
       applyEvent(test, event)
       continue
     }
@@ -96,15 +96,16 @@ export function parseGoTest(ndjson: string): TestCase[] {
   }
 
   const all = [...tests.values()]
-  const cases = all.filter((test) => isReported(test, all)).map(toCase)
+  const { parents, failedParents } = findParents(all)
+  const cases = all
+    .filter((test) => isReported(test, parents, failedParents))
+    .map(toCase)
+  const failedPackages = new Set(
+    cases.filter((c) => c.status === 'failed').map((c) => c.suite)
+  )
 
   for (const [name, pkg] of packages) {
-    if (
-      !pkg.failed ||
-      cases.some((c) => c.suite === name && c.status === 'failed')
-    ) {
-      continue
-    }
+    if (!pkg.failed || failedPackages.has(name)) continue
     const output = pkg.failedBuild ? (builds.get(pkg.failedBuild) ?? []) : []
     cases.push({
       suite: name,
@@ -136,17 +137,39 @@ function applyEvent(test: Test, event: Event): void {
   }
 }
 
+// Collected in one pass, as comparing every test with every other is too slow
+// for packages with tens of thousands of subtests
+function findParents(all: Test[]): {
+  parents: Set<string>
+  failedParents: Set<string>
+} {
+  const parents = new Set<string>()
+  const failedParents = new Set<string>()
+  for (const test of all) {
+    const parts = test.name.split('/')
+    for (let i = 1; i < parts.length; i++) {
+      const parent = key(test.pkg, parts.slice(0, i).join('/'))
+      parents.add(parent)
+      if (status(test) === 'failed') failedParents.add(parent)
+    }
+  }
+  return { parents, failedParents }
+}
+
 // A parent test fails whenever a subtest does, so it is only worth reporting
 // when it failed on its own account
-function isReported(test: Test, all: Test[]): boolean {
-  const children = all.filter(
-    (other) => other.pkg === test.pkg && other.name.startsWith(`${test.name}/`)
-  )
-  if (children.length === 0) return true
-  return (
-    status(test) === 'failed' &&
-    !children.some((child) => status(child) === 'failed')
-  )
+function isReported(
+  test: Test,
+  parents: Set<string>,
+  failedParents: Set<string>
+): boolean {
+  const name = key(test.pkg, test.name)
+  if (!parents.has(name)) return true
+  return status(test) === 'failed' && !failedParents.has(name)
+}
+
+function key(pkg: string, name: string): string {
+  return `${pkg}\0${name}`
 }
 
 // A test with no result was cut off, by a panic or a timeout
