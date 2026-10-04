@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import type { TestCase, TestReport } from '../src/report.js'
 
@@ -33,10 +33,6 @@ const report = (name: string, cases: TestCase[]): TestReport => ({
 })
 
 describe('summary.ts', () => {
-  beforeEach(() => {
-    core.summary.addRaw.mockReturnValue(core.summary)
-  })
-
   it('renders a heading with the counts for each report', () => {
     const html = renderSummary(
       [

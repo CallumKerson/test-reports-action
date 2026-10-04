@@ -1,7 +1,7 @@
 /**
  * Unit tests for the action's main functionality, src/main.ts
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -27,30 +27,35 @@ const { run } = await import('../src/main.js')
 const { parseJUnit } = await import('../src/junit.js')
 
 describe('main.ts', () => {
-  let workspace: string
+  // Each test gets a workspace of its own, and the action's inputs
+  const setUp = async (
+    inputs: Record<string, string> = {}
+  ): Promise<string> => {
+    const workspace = await mkdtemp(path.join(tmpdir(), 'main-'))
+    onTestFinished(async () => rm(workspace, { recursive: true, force: true }))
+    vi.stubEnv('GITHUB_WORKSPACE', workspace)
+    core.getInput.mockImplementation(
+      (name) =>
+        ({ token: 'token', 'retention-days': '7', ...inputs })[name] ?? ''
+    )
+    return workspace
+  }
 
-  const report = async (name: string, xml: string): Promise<ReportFile> => {
+  const report = async (
+    workspace: string,
+    name: string,
+    xml: string
+  ): Promise<ReportFile> => {
     const file = path.join(workspace, `${name}.junit.xml`)
     await writeFile(file, xml)
     return { file, path: `${name}.junit.xml`, name, parse: parseJUnit }
   }
 
-  beforeEach(async () => {
-    workspace = await mkdtemp(path.join(tmpdir(), 'main-'))
-    process.env.GITHUB_WORKSPACE = workspace
-    core.getInput.mockImplementation(
-      (name) => ({ token: 'token', 'retention-days': '7' })[name] ?? ''
-    )
-  })
-
-  afterEach(async () => {
-    delete process.env.GITHUB_WORKSPACE
-    await rm(workspace, { recursive: true, force: true })
-  })
-
   it('reports passing tests without failing', async () => {
+    const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
+        workspace,
         'unit',
         '<testsuite name="s"><testcase name="a"/></testsuite>'
       )
@@ -73,12 +78,15 @@ describe('main.ts', () => {
   })
 
   it('fails when any test failed', async () => {
+    const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
+        workspace,
         'a',
         '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
       ),
       await report(
+        workspace,
         'b',
         '<testsuite><testcase name="b"><failure/></testcase><testcase name="c"/></testsuite>'
       )
@@ -91,8 +99,10 @@ describe('main.ts', () => {
   })
 
   it('says one test failed', async () => {
+    const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
+        workspace,
         'a',
         '<testsuite><testcase name="a"><error/></testcase></testsuite>'
       )
@@ -117,9 +127,14 @@ describe('main.ts', () => {
   })
 
   it('reports a report that cannot be parsed as a failed test', async () => {
+    const workspace = await setUp()
     findReports.mockResolvedValue([
-      await report('bad', '<project/>'),
-      await report('good', '<testsuite><testcase name="a"/></testsuite>')
+      await report(workspace, 'bad', '<project/>'),
+      await report(
+        workspace,
+        'good',
+        '<testsuite><testcase name="a"/></testsuite>'
+      )
     ])
 
     await run()
@@ -154,10 +169,12 @@ describe('main.ts', () => {
   })
 
   it('fails naming both failed tests and unparsable reports', async () => {
+    const workspace = await setUp()
     findReports.mockResolvedValue([
-      await report('a', '<project/>'),
-      await report('b', '<project/>'),
+      await report(workspace, 'a', '<project/>'),
+      await report(workspace, 'b', '<project/>'),
       await report(
+        workspace,
         'c',
         '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
       )
@@ -188,12 +205,13 @@ describe('main.ts', () => {
     // oxlint-disable-next-line no-template-curly-in-string
     ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
   ])('names the job after %s', async (_title, name, matrix, expected) => {
-    core.getInput.mockImplementation(
-      (input) =>
-        ({ token: 'token', 'retention-days': '7', name, matrix })[input] ?? ''
-    )
+    const workspace = await setUp({ name, matrix })
     findReports.mockResolvedValue([
-      await report('unit', '<testsuite><testcase name="a"/></testsuite>')
+      await report(
+        workspace,
+        'unit',
+        '<testsuite><testcase name="a"/></testsuite>'
+      )
     ])
 
     await run()
@@ -208,11 +226,13 @@ describe('main.ts', () => {
   it.each(['0', '1.5', 'week', ''])(
     'fails when retention-days is %p',
     async (days) => {
-      core.getInput.mockImplementation((name) =>
-        name === 'retention-days' ? days : 'token'
-      )
+      const workspace = await setUp({ 'retention-days': days })
       findReports.mockResolvedValue([
-        await report('unit', '<testsuite><testcase name="a"/></testsuite>')
+        await report(
+          workspace,
+          'unit',
+          '<testsuite><testcase name="a"/></testsuite>'
+        )
       ])
 
       await run()
@@ -225,7 +245,7 @@ describe('main.ts', () => {
   )
 
   it('searches the current directory outside of Actions', async () => {
-    delete process.env.GITHUB_WORKSPACE
+    vi.stubEnv('GITHUB_WORKSPACE', undefined)
     findReports.mockResolvedValue([])
 
     await run()

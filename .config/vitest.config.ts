@@ -6,7 +6,10 @@ export default defineConfig({
   test: {
     // This config lives in .config/, so resolve paths from the repository root
     root: new URL('..', import.meta.url).pathname,
-    clearMocks: true,
+    // Puts back each mock's own implementation, and each stubbed environment
+    // variable, after every test
+    mockReset: true,
+    unstubEnvs: true,
     coverage: {
       enabled: true,
       include: ['src/**'],
