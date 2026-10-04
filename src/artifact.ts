@@ -9,6 +9,13 @@ import path from 'node:path'
 // free number
 const maxAttempts = 50
 
+interface Upload {
+  directory: string
+  base: string
+  content: string
+  retentionDays: number
+}
+
 /**
  * Uploads the full summary as a standalone HTML page.
  *
@@ -22,18 +29,16 @@ export async function uploadFullSummary(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )
   const base = `test-results-${context.job}`
-  return upload(directory, base, page(html), retentionDays, 1)
+  return upload({ directory, base, content: page(html), retentionDays }, 1)
 }
 
 // Each attempt depends on whether the name before it was taken, so they run
 // one after another
 async function upload(
-  directory: string,
-  base: string,
-  content: string,
-  retentionDays: number,
+  options: Upload,
   attempt: number
 ): Promise<string | undefined> {
+  const { directory, base, content, retentionDays } = options
   if (attempt > maxAttempts) {
     warning(
       `Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`
@@ -58,7 +63,7 @@ async function upload(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     if (/\(409\)/.test(message)) {
-      return upload(directory, base, content, retentionDays, attempt + 1)
+      return upload(options, attempt + 1)
     }
     warning(`Could not upload the full summary: ${message}`)
     return undefined

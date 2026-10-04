@@ -36,7 +36,6 @@
     "import/no-nodejs-modules": "off",
 
     // Arbitrary limits that would split code for no reader's benefit
-    "max-params": "off", // mocks and helpers mirror the APIs they stand in for
     "max-statements": "off",
     "no-magic-numbers": "off", // test data, and units such as ms per second
 
@@ -55,7 +54,9 @@
         // Tests import from vitest explicitly rather than using globals
         "vitest/no-importing-vitest-globals": "off",
         // Tests import the source they test from ../src
-        "import/no-relative-parent-imports": "off"
+        "import/no-relative-parent-imports": "off",
+        // Mocks mirror the APIs they stand in for
+        "max-params": "off"
       }
     },
     {
