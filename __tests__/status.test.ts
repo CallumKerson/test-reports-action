@@ -87,6 +87,16 @@ describe('status.ts', () => {
     )
   })
 
+  it('Sets statuses on the commit that triggered a workflow_run', async () => {
+    github.context.payload = { workflow_run: { head_sha: 'run-sha' } }
+
+    await setStatuses('token', [report('unit', [])], '')
+
+    expect(github.createCommitStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ sha: 'run-sha' })
+    )
+  })
+
   it('Adds the job name to each status', async () => {
     await setStatuses('token', [report('unit', [])], 'ubuntu-latest, 24')
 

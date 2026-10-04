@@ -15,8 +15,12 @@ export async function setStatuses(
 ): Promise<void> {
   const { context } = github
   const octokit = github.getOctokit(token)
-  // On pull requests, context.sha is a merge commit that the PR never shows
-  const sha: string = context.payload.pull_request?.head.sha ?? context.sha
+  // On pull requests, context.sha is a merge commit that the PR never shows,
+  // and on workflow_run it is the latest commit on the default branch
+  const sha: string =
+    context.payload.pull_request?.head.sha ??
+    context.payload.workflow_run?.head_sha ??
+    context.sha
   const prefix = jobName ? `Tests (${jobName})` : 'Tests'
   const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
 
