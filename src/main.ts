@@ -46,10 +46,23 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   try {
     return { name: file.name, path: file.path, cases: file.parse(content) }
   } catch (error) {
-    throw new Error(
-      `Could not parse ${file.path}: ${(error as Error).message}`,
-      { cause: error }
-    )
+    // One broken report shouldn't hide the results of all the others, so it
+    // becomes a failed test of its own
+    const message = (error as Error).message
+    core.error(`Could not parse ${file.path}: ${message}`)
+    return {
+      name: file.name,
+      path: file.path,
+      cases: [
+        {
+          suite: '',
+          name: 'Could not parse report',
+          status: 'failed',
+          durationMs: 0,
+          message
+        }
+      ]
+    }
   }
 }
 

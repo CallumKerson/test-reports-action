@@ -76,6 +76,13 @@ describe('junit.ts', () => {
     ).toEqual([])
   })
 
+  it.each([
+    '<testsuites></testsuites>',
+    '<?xml version="1.0"?><testsuites name="jest tests" tests="0"/>'
+  ])('Parses a report with no suites: %p', (xml) => {
+    expect(parseJUnit(xml)).toEqual([])
+  })
+
   it('Leaves out the message of a failure with no details', () => {
     const [testCase] = parseJUnit(
       '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
