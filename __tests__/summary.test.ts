@@ -5,8 +5,8 @@ import type { TestCase, TestReport } from '../src/report.js'
 const uploadFullSummary =
   vi.fn<(html: string, retentionDays: number) => Promise<string | undefined>>()
 
-vi.doMock('@actions/core', () => core)
-vi.doMock('../src/artifact.js', () => ({ uploadFullSummary }))
+vi.doMock(import('@actions/core'), () => core)
+vi.doMock(import('../src/artifact.js'), () => ({ uploadFullSummary }))
 
 const { formatDuration, maxSummaryBytes, renderSummary, writeSummary } =
   await import('../src/summary.js')
@@ -151,7 +151,7 @@ describe('summary.ts', () => {
         renderSummary([report('unit', [passed, failed])], 'full')
       )
       expect(core.summary.addRaw).toHaveBeenCalledWith(written(), true)
-      expect(core.summary.write).toHaveBeenCalled()
+      expect(core.summary.write).toHaveBeenCalledWith()
       expect(uploadFullSummary).not.toHaveBeenCalled()
     })
 

@@ -11,4 +11,6 @@ export const uploadArtifact =
     ) => Promise<UploadArtifactResponse>
   >()
 
-export default { uploadArtifact }
+const artifact = { uploadArtifact }
+
+export default artifact

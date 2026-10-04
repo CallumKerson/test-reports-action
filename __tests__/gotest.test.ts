@@ -14,7 +14,7 @@ describe('gotest.ts', () => {
 
     expect(
       cases.map(({ suite, name, status }) => [suite, name, status])
-    ).toEqual([
+    ).toStrictEqual([
       ['example.com/demo/calc', 'TestAdd', 'passed'],
       ['example.com/demo/calc', 'TestDivide', 'failed'],
       ['example.com/demo/calc', 'TestRound', 'skipped'],
@@ -58,7 +58,7 @@ describe('gotest.ts', () => {
       )
     )
 
-    expect(cases).toEqual([
+    expect(cases).toStrictEqual([
       { suite: 'p', name: 'TestA', status: 'passed', durationMs: 250 },
       {
         suite: 'p',
@@ -84,7 +84,7 @@ describe('gotest.ts', () => {
       )
     )
 
-    expect(cases).toEqual([
+    expect(cases).toStrictEqual([
       {
         suite: 'p',
         name: 'TestSlow',
@@ -109,7 +109,7 @@ describe('gotest.ts', () => {
 
     expect(
       cases.map(({ suite, name, status }) => [suite, name, status])
-    ).toEqual([
+    ).toStrictEqual([
       ['p', 'TestA/b/c', 'failed'],
       ['p', 'TestA/b/d', 'passed'],
       ['p', 'TestAB', 'passed'],
@@ -120,7 +120,9 @@ describe('gotest.ts', () => {
   it('Leaves out the message of a failure with no output', () => {
     expect(
       parseGoTest(events({ Action: 'fail', Package: 'p', Test: 'TestA' }))
-    ).toEqual([{ suite: 'p', name: 'TestA', status: 'failed', durationMs: 0 }])
+    ).toStrictEqual([
+      { suite: 'p', name: 'TestA', status: 'failed', durationMs: 0 }
+    ])
   })
 
   it('Skips lines that are not JSON events', () => {
@@ -136,13 +138,13 @@ describe('gotest.ts', () => {
       ].join('\n')
     )
 
-    expect(cases).toEqual([
+    expect(cases).toStrictEqual([
       { suite: 'p', name: 'TestA', status: 'passed', durationMs: 0 }
     ])
   })
 
   it('Parses an empty file', () => {
-    expect(parseGoTest('')).toEqual([])
+    expect(parseGoTest('')).toStrictEqual([])
   })
 
   it('Throws on output that is not from go test -json', () => {

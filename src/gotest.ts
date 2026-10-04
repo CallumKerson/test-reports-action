@@ -33,7 +33,7 @@ const results: Record<string, TestStatus> = {
 
 // go test prints these around each test's own output, and the status is
 // already shown elsewhere
-const noise = /^\s*(=== (RUN|PAUSE|CONT|NAME)|--- (PASS|FAIL|SKIP):)/
+const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/
 
 /**
  * Parses the output of `go test -json` into test cases.

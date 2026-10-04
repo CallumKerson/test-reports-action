@@ -11,7 +11,7 @@ describe('junit.ts', () => {
 
     expect(
       cases.map(({ suite, name, status }) => [suite, name, status])
-    ).toEqual([
+    ).toStrictEqual([
       ['math', 'math adds numbers', 'passed'],
       ['math', 'math divides numbers', 'failed'],
       ['math', 'math rounds numbers', 'skipped'],
@@ -25,7 +25,7 @@ describe('junit.ts', () => {
   it('Parses a Surefire report with a bare testsuite root', async () => {
     const cases = parseJUnit(await fixture('surefire.xml'))
 
-    expect(cases.map(({ status }) => status)).toEqual([
+    expect(cases.map(({ status }) => status)).toStrictEqual([
       'passed',
       'failed',
       'skipped'
@@ -39,7 +39,7 @@ describe('junit.ts', () => {
   it('Uses the class name as the suite and falls back to the message attribute', async () => {
     const cases = parseJUnit(await fixture('pytest.xml'))
 
-    expect(cases[1]).toEqual({
+    expect(cases[1]).toStrictEqual({
       suite: 'tests.test_app',
       name: 'test_bad',
       status: 'failed',
@@ -59,7 +59,7 @@ describe('junit.ts', () => {
         </testsuite>
       </testsuites>`)
 
-    expect(cases).toEqual([
+    expect(cases).toStrictEqual([
       { suite: 'outer', name: 'a', status: 'passed', durationMs: 0 },
       {
         suite: 'inner',
@@ -74,20 +74,20 @@ describe('junit.ts', () => {
   it('Parses an empty suite', () => {
     expect(
       parseJUnit('<testsuites><testsuite name="none"/></testsuites>')
-    ).toEqual([])
+    ).toStrictEqual([])
   })
 
   it.each([
     '<testsuites></testsuites>',
     '<?xml version="1.0"?><testsuites name="jest tests" tests="0"/>'
   ])('Parses a report with no suites: %p', (xml) => {
-    expect(parseJUnit(xml)).toEqual([])
+    expect(parseJUnit(xml)).toStrictEqual([])
   })
 
   it('Parses a test case with no attributes', () => {
-    expect(parseJUnit('<testsuite name="s"><testcase/></testsuite>')).toEqual([
-      { suite: 's', name: '', status: 'passed', durationMs: 0 }
-    ])
+    expect(
+      parseJUnit('<testsuite name="s"><testcase/></testsuite>')
+    ).toStrictEqual([{ suite: 's', name: '', status: 'passed', durationMs: 0 }])
   })
 
   it('Leaves out the message of a failure with no details', () => {
@@ -95,7 +95,7 @@ describe('junit.ts', () => {
       '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
     )
 
-    expect(testCase).toEqual({
+    expect(testCase).toStrictEqual({
       suite: '',
       name: 'a',
       status: 'failed',

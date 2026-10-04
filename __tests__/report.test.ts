@@ -10,11 +10,11 @@ describe('report.ts', () => {
         { suite: 's', name: 'c', status: 'skipped', durationMs: 0 },
         { suite: 's', name: 'd', status: 'passed', durationMs: 1.5 }
       ])
-    ).toEqual({ passed: 2, failed: 1, skipped: 1, durationMs: 16.5 })
+    ).toStrictEqual({ passed: 2, failed: 1, skipped: 1, durationMs: 16.5 })
   })
 
   it('Counts nothing for no cases', () => {
-    expect(countResults([])).toEqual({
+    expect(countResults([])).toStrictEqual({
       passed: 0,
       failed: 0,
       skipped: 0,

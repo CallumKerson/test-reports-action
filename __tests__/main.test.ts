@@ -18,10 +18,10 @@ const writeSummary =
   vi.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
 
 // Mocks should be declared before the module being tested is imported.
-vi.doMock('@actions/core', () => core)
-vi.doMock('../src/discover.js', () => ({ findReports }))
-vi.doMock('../src/status.js', () => ({ setStatuses }))
-vi.doMock('../src/summary.js', () => ({ writeSummary }))
+vi.doMock(import('@actions/core'), () => core)
+vi.doMock(import('../src/discover.js'), () => ({ findReports }))
+vi.doMock(import('../src/status.js'), () => ({ setStatuses }))
+vi.doMock(import('../src/summary.js'), () => ({ writeSummary }))
 
 const { run } = await import('../src/main.js')
 const { parseJUnit } = await import('../src/junit.js')
@@ -86,7 +86,7 @@ describe('main.ts', () => {
 
     await run()
 
-    expect(setStatuses).toHaveBeenCalled()
+    expect(setStatuses).toHaveBeenCalledWith('token', expect.any(Array), '')
     expect(core.setFailed).toHaveBeenCalledWith('2 tests failed')
   })
 
@@ -184,6 +184,8 @@ describe('main.ts', () => {
       '{"os":"ubuntu-latest"}',
       'unit'
     ],
+    // The default in action.yaml, as local-action leaves it unevaluated
+    // oxlint-disable-next-line no-template-curly-in-string
     ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
   ])('Names the job after %s', async (_, name, matrix, expected) => {
     core.getInput.mockImplementation(
