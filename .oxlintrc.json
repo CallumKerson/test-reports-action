@@ -4,6 +4,9 @@
     "node": true,
     "es2022": true
   },
+  "options": {
+    "typeAware": true
+  },
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
