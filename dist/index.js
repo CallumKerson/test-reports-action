@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import * as os$3 from "os";
+import * as os$2 from "os";
 import os, { EOL } from "os";
 import * as crypto$1 from "crypto";
 import * as fs$7 from "fs";
@@ -126,7 +126,7 @@ function toCommandProperties(annotationProperties) {
 */
 function issueCommand(command, properties, message) {
 	const cmd = new Command(command, properties, message);
-	process.stdout.write(cmd.toString() + os$3.EOL);
+	process.stdout.write(cmd.toString() + os$2.EOL);
 }
 const CMD_STRING = "::";
 var Command = class {
@@ -16683,7 +16683,7 @@ function warning(message, properties = {}) {
 * @param message info message
 */
 function info(message) {
-	process.stdout.write(message + os$3.EOL);
+	process.stdout.write(message + os$2.EOL);
 }
 //#endregion
 //#region node_modules/@actions/glob/lib/internal-glob-options-helper.js
@@ -18578,7 +18578,7 @@ var Pattern = class Pattern {
 		pattern = normalizeSeparators(pattern);
 		if (pattern === "." || pattern.startsWith(`.${path$7.sep}`)) pattern = Pattern.globEscape(process.cwd()) + pattern.substr(1);
 		else if (pattern === "~" || pattern.startsWith(`~${path$7.sep}`)) {
-			homedir = homedir || os$3.homedir();
+			homedir = homedir || os$2.homedir();
 			assert(homedir, "Unable to determine HOME directory");
 			assert(hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
 			pattern = Pattern.globEscape(homedir) + pattern.substr(1);
@@ -18911,7 +18911,7 @@ const results = {
 	fail: "failed",
 	skip: "skipped"
 };
-const noise = /^\s*(=== (RUN|PAUSE|CONT|NAME)|--- (PASS|FAIL|SKIP):)/;
+const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/;
 /**
 * Parses the output of `go test -json` into test cases.
 *
@@ -18927,7 +18927,7 @@ function parseGoTest(ndjson) {
 	for (const line of ndjson.split("\n")) {
 		const event = parseEvent(line);
 		if (!event) continue;
-		events++;
+		events += 1;
 		if (event.ImportPath) {
 			if (event.Action === "build-output") builds.set(event.ImportPath, [...builds.get(event.ImportPath) ?? [], event.Output ?? ""]);
 			continue;
@@ -18963,26 +18963,44 @@ function parseGoTest(ndjson) {
 	const { parents, failedParents } = findParents(all);
 	const cases = all.filter((test) => isReported(test, parents, failedParents)).map(toCase);
 	const failedPackages = new Set(cases.filter((c) => c.status === "failed").map((c) => c.suite));
-	for (const [name, pkg] of packages) {
-		if (!pkg.failed || failedPackages.has(name)) continue;
+	return [...cases, ...packageFailures(packages, builds, failedPackages)];
+}
+function packageFailures(packages, builds, failedPackages) {
+	return [...packages].filter(([name, pkg]) => pkg.failed && !failedPackages.has(name)).map(([name, pkg]) => {
 		const output = pkg.failedBuild ? builds.get(pkg.failedBuild) ?? [] : [];
-		cases.push({
+		return {
 			suite: name,
 			name,
 			status: "failed",
 			durationMs: pkg.elapsed * 1e3,
 			message: clean([...output, ...pkg.output])
-		});
-	}
-	return cases;
+		};
+	});
 }
 function parseEvent(line) {
 	if (!line.startsWith("{")) return void 0;
+	let fields;
 	try {
-		return JSON.parse(line);
+		fields = JSON.parse(line);
 	} catch {
 		return;
 	}
+	if (!isRecord(fields)) return void 0;
+	return {
+		Action: text(fields.Action),
+		Package: text(fields.Package),
+		Test: text(fields.Test),
+		Output: text(fields.Output),
+		Elapsed: typeof fields.Elapsed === "number" ? fields.Elapsed : void 0,
+		ImportPath: text(fields.ImportPath),
+		FailedBuild: text(fields.FailedBuild)
+	};
+}
+function isRecord(value) {
+	return typeof value === "object" && value !== null;
+}
+function text(value) {
+	return typeof value === "string" ? value : void 0;
 }
 function applyEvent(test, event) {
 	if (event.Action === "output") test.output.push(event.Output ?? "");
@@ -18996,7 +19014,7 @@ function findParents(all) {
 	const failedParents = /* @__PURE__ */ new Set();
 	for (const test of all) {
 		const parts = test.name.split("/");
-		for (let i = 1; i < parts.length; i++) {
+		for (let i = 1; i < parts.length; i += 1) {
 			const parent = key(test.pkg, parts.slice(0, i).join("/"));
 			parents.add(parent);
 			if (status(test) === "failed") failedParents.add(parent);
@@ -23035,17 +23053,18 @@ const parser = new XMLParser$1({
 */
 function parseJUnit(xml) {
 	const document = parser.parse(xml);
+	if (!isNode(document)) throw new Error("not a JUnit report: no elements");
 	if ("testsuites" in document) return parseSuites(document.testsuites);
 	if (!Array.isArray(document.testsuite)) throw new Error("not a JUnit report: no <testsuite> element");
 	return parseSuites(document);
 }
 function parseSuites(parent) {
-	if (typeof parent !== "object" || parent === null) return [];
-	return (parent.testsuite ?? []).flatMap(parseSuite);
+	if (!isNode(parent)) return [];
+	return nodes(parent.testsuite).flatMap(parseSuite);
 }
 function parseSuite(suite) {
 	const suiteName = attribute(suite, "name");
-	return [...(suite.testcase ?? []).map((testCase) => parseCase(testCase, suiteName)), ...parseSuites(suite)];
+	return [...nodes(suite.testcase).map((testCase) => parseCase(testCase, suiteName)), ...parseSuites(suite)];
 }
 function parseCase(testCase, suiteName) {
 	const name = attribute(testCase, "name");
@@ -23056,18 +23075,27 @@ function parseCase(testCase, suiteName) {
 		status: "passed",
 		durationMs: seconds(attribute(testCase, "time")) * 1e3
 	};
-	const problems = [...testCase.failure ?? [], ...testCase.error ?? []];
+	const problems = [...list(testCase.failure), ...list(testCase.error)];
 	if (problems.length > 0) {
 		result.status = "failed";
-		const message = problems.map(describe$1).filter(Boolean).join("\n\n");
+		const message = problems.map(describe).filter(Boolean).join("\n\n");
 		if (message) result.message = message;
 	} else if (testCase.skipped) result.status = "skipped";
 	return result;
 }
-function describe$1(problem) {
+function describe(problem) {
 	if (typeof problem === "string") return problem.trim();
-	const node = problem;
-	return (typeof node["#text"] === "string" ? node["#text"].trim() : "") || attribute(node, "message") || attribute(node, "type");
+	if (!isNode(problem)) return "";
+	return (typeof problem["#text"] === "string" ? problem["#text"].trim() : "") || attribute(problem, "message") || attribute(problem, "type");
+}
+function isNode(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function list(value) {
+	return Array.isArray(value) ? value : [];
+}
+function nodes(value) {
+	return list(value).map((item) => isNode(item) ? item : {});
 }
 function attribute(node, name) {
 	const value = node[`@${name}`];
@@ -23126,10 +23154,21 @@ function countResults(cases) {
 		durationMs: 0
 	};
 	for (const testCase of cases) {
-		counts[testCase.status]++;
+		counts[testCase.status] += 1;
 		counts.durationMs += testCase.durationMs;
 	}
 	return counts;
+}
+/**
+* Describes counts in words, such as `3 passed, 1 skipped`.
+*/
+function describeCounts(counts) {
+	const parts = [
+		"passed",
+		"failed",
+		"skipped"
+	].filter((status) => counts[status] > 0).map((status) => `${counts[status]} ${status}`);
+	return parts.length > 0 ? parts.join(", ") : "No tests";
 }
 //#endregion
 //#region node_modules/@actions/github/lib/context.js
@@ -26232,33 +26271,25 @@ async function setStatuses(token, reports, jobName) {
 	const sha = context.payload.pull_request?.head.sha ?? context.payload.workflow_run?.head_sha ?? context.sha;
 	const prefix = jobName ? `Tests (${jobName})` : "Tests";
 	const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-	for (const report of reports) {
-		const counts = countResults(report.cases);
-		try {
-			await octokit.rest.repos.createCommitStatus({
+	try {
+		await Promise.all(reports.map(async (report) => {
+			const counts = countResults(report.cases);
+			return octokit.rest.repos.createCommitStatus({
 				...context.repo,
 				sha,
 				state: counts.failed > 0 ? "failure" : "success",
 				context: `${prefix} / ${report.name}`,
-				description: describe(counts),
+				description: describeCounts(counts),
 				target_url: targetUrl
 			});
-		} catch (error) {
-			if (error.status === 403) {
-				warning("Could not set commit statuses: the token needs the statuses: write permission");
-				return;
-			}
-			throw error;
+		}));
+	} catch (error) {
+		if (typeof error === "object" && error !== null && "status" in error && error.status === 403) {
+			warning("Could not set commit statuses: the token needs the statuses: write permission");
+			return;
 		}
+		throw error;
 	}
-}
-function describe(counts) {
-	const parts = [
-		"passed",
-		"failed",
-		"skipped"
-	].filter((status) => counts[status] > 0).map((status) => `${counts[status]} ${status}`);
-	return parts.length > 0 ? parts.join(", ") : "No tests";
 }
 //#endregion
 //#region node_modules/@actions/artifact/lib/internal/shared/config.js
@@ -34729,86 +34760,6 @@ var require_browser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/has-flag/index.js
-var require_has_flag = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	module.exports = (flag, argv = process.argv) => {
-		const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
-		const position = argv.indexOf(prefix + flag);
-		const terminatorPosition = argv.indexOf("--");
-		return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
-	};
-}));
-//#endregion
-//#region node_modules/supports-color/index.js
-var require_supports_color = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	const os$2 = __require("os");
-	const tty$1 = __require("tty");
-	const hasFlag = require_has_flag();
-	const { env } = process;
-	let forceColor;
-	if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) forceColor = 0;
-	else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) forceColor = 1;
-	if ("FORCE_COLOR" in env) {
-		if (env.FORCE_COLOR === "true") forceColor = 1;
-		else if (env.FORCE_COLOR === "false") forceColor = 0;
-		else forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
-	}
-	function translateLevel(level) {
-		if (level === 0) return false;
-		return {
-			level,
-			hasBasic: true,
-			has256: level >= 2,
-			has16m: level >= 3
-		};
-	}
-	function supportsColor(haveStream, streamIsTTY) {
-		if (forceColor === 0) return 0;
-		if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) return 3;
-		if (hasFlag("color=256")) return 2;
-		if (haveStream && !streamIsTTY && forceColor === void 0) return 0;
-		const min = forceColor || 0;
-		if (env.TERM === "dumb") return min;
-		if (process.platform === "win32") {
-			const osRelease = os$2.release().split(".");
-			if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) return Number(osRelease[2]) >= 14931 ? 3 : 2;
-			return 1;
-		}
-		if ("CI" in env) {
-			if ([
-				"TRAVIS",
-				"CIRCLECI",
-				"APPVEYOR",
-				"GITLAB_CI",
-				"GITHUB_ACTIONS",
-				"BUILDKITE"
-			].some((sign) => sign in env) || env.CI_NAME === "codeship") return 1;
-			return min;
-		}
-		if ("TEAMCITY_VERSION" in env) return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
-		if (env.COLORTERM === "truecolor") return 3;
-		if ("TERM_PROGRAM" in env) {
-			const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
-			switch (env.TERM_PROGRAM) {
-				case "iTerm.app": return version >= 3 ? 3 : 2;
-				case "Apple_Terminal": return 2;
-			}
-		}
-		if (/-256(color)?$/i.test(env.TERM)) return 2;
-		if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) return 1;
-		if ("COLORTERM" in env) return 1;
-		return min;
-	}
-	function getSupportLevel(stream) {
-		return translateLevel(supportsColor(stream, stream && stream.isTTY));
-	}
-	module.exports = {
-		supportsColor: getSupportLevel,
-		stdout: translateLevel(supportsColor(true, tty$1.isatty(1))),
-		stderr: translateLevel(supportsColor(true, tty$1.isatty(2)))
-	};
-}));
-//#endregion
 //#region node_modules/debug/src/node.js
 var require_node$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
@@ -34838,7 +34789,7 @@ var require_node$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		1
 	];
 	try {
-		const supportsColor = require_supports_color();
+		const supportsColor = __require("supports-color");
 		if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) exports.colors = [
 			20,
 			21,
@@ -79708,7 +79659,7 @@ var require_commonjs$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		}
 		constructor(src, dest, opts) {
 			super(src, dest, opts);
-			this.proxyErrors = (er) => dest.emit("error", er);
+			this.proxyErrors = (er) => this.dest.emit("error", er);
 			src.on("error", this.proxyErrors);
 		}
 	};
@@ -80347,7 +80298,8 @@ while (this[FLUSHCHUNK](this[BUFFERSHIFT]()) && this[BUFFER].length);
 				return: stop,
 				[Symbol.asyncIterator]() {
 					return this;
-				}
+				},
+				[Symbol.asyncDispose]: async () => {}
 			};
 		}
 		/**
@@ -80387,7 +80339,8 @@ while (this[FLUSHCHUNK](this[BUFFERSHIFT]()) && this[BUFFER].length);
 				return: stop,
 				[Symbol.iterator]() {
 					return this;
-				}
+				},
+				[Symbol.dispose]: () => {}
 			};
 		}
 		/**
@@ -90054,7 +90007,7 @@ var require_parser_stream = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 	module.exports = ParserStream;
 }));
 //#endregion
-//#region node_modules/unzip-stream/node_modules/mkdirp/index.js
+//#region node_modules/mkdirp/index.js
 var require_mkdirp = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	var path$2 = __require("path");
 	var fs$3 = __require("fs");
@@ -92117,25 +92070,28 @@ const maxAttempts = 50;
 * @returns A link to the artifact, or nothing if it could not be uploaded.
 */
 async function uploadFullSummary(html, retentionDays) {
-	const { context } = github_exports;
-	const directory = await mkdtemp(path.join(process.env.RUNNER_TEMP || tmpdir(), "test-reports-"));
-	const base = `test-results-${context.job}`;
-	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-		const file = path.join(directory, attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`);
-		await writeFile(file, page(html));
-		try {
-			const { id } = await client.uploadArtifact(path.basename(file), [file], directory, {
-				retentionDays,
-				skipArchive: true
-			});
-			return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`;
-		} catch (error) {
-			if (/\(409\)/.test(error.message)) continue;
-			warning(`Could not upload the full summary: ${error.message}`);
-			return;
-		}
+	return upload(await mkdtemp(path.join(process.env.RUNNER_TEMP || tmpdir(), "test-reports-")), `test-results-${context$2.job}`, page(html), retentionDays, 1);
+}
+async function upload(directory, base, content, retentionDays, attempt) {
+	if (attempt > maxAttempts) {
+		warning(`Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`);
+		return;
 	}
-	warning(`Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`);
+	const { context } = github_exports;
+	const file = path.join(directory, attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`);
+	await writeFile(file, content);
+	try {
+		const { id } = await client.uploadArtifact(path.basename(file), [file], directory, {
+			retentionDays,
+			skipArchive: true
+		});
+		return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (/\(409\)/.test(message)) return upload(directory, base, content, retentionDays, attempt + 1);
+		warning(`Could not upload the full summary: ${message}`);
+		return;
+	}
 }
 function page(html) {
 	return `<!doctype html>
@@ -92154,8 +92110,8 @@ const maxFailures = 50;
 const maxLines = 50;
 const ansiEscape = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 /**
-* Writes a table of results and the details of every failed test to the job
-* summary.
+* Writes a table for each report to the job summary: a row per suite when
+* everything passed, or else a row per failed test with its failure.
 *
 * A summary too big for GitHub is cut short, and the full one is uploaded as
 * an artifact, kept for retentionDays, and linked from it.
@@ -92176,50 +92132,65 @@ function fits(html) {
 	return Buffer.byteLength(html) < maxSummaryBytes;
 }
 function renderSummary(reports, detail) {
-	const rows = reports.map((report) => {
-		const counts = countResults(report.cases);
+	return ["<h2>Test results</h2>", ...reports.map((report) => renderReport(report, detail))].join("\n");
+}
+function renderReport(report, detail) {
+	const counts = countResults(report.cases);
+	const heading = [`<h3>${counts.failed > 0 ? "❌" : "✅"} ${escape(report.name)}</h3>`, `<p><code>${escape(report.path)}</code> · ${describeCounts(counts)} · ${formatDuration(counts.durationMs)}</p>`];
+	if (detail === "none" || report.cases.length === 0) return heading.join("\n");
+	const table = counts.failed > 0 ? renderFailures(report.cases, detail === "limited") : renderSuites(report.cases);
+	return [...heading, ...table].join("\n");
+}
+function renderSuites(cases) {
+	const suites = /* @__PURE__ */ new Map();
+	for (const testCase of cases) suites.set(testCase.suite, [...suites.get(testCase.suite) ?? [], testCase]);
+	const rows = [...suites].map(([suite, suiteCases]) => {
+		const counts = countResults(suiteCases);
 		return row("td", [
-			`${counts.failed > 0 ? "❌" : "✅"} ${escape(report.name)}`,
+			escape(suite),
 			String(counts.passed),
-			String(counts.failed),
 			String(counts.skipped),
 			formatDuration(counts.durationMs)
 		]);
 	});
 	return [
-		"<h2>Test results</h2>",
-		[
-			"<table>",
-			row("th", [
-				"Report",
-				"Passed",
-				"Failed",
-				"Skipped",
-				"Duration"
-			]),
-			...rows,
-			"</table>"
-		].join("\n"),
-		...detail === "none" ? [] : reports.flatMap((report) => renderFailures(report, detail === "limited"))
-	].join("\n");
-}
-function renderFailures(report, limited) {
-	const failures = report.cases.filter(({ status }) => status === "failed");
-	if (failures.length === 0) return [];
-	const shown = (limited ? failures.slice(0, maxFailures) : failures).map((testCase) => renderFailure(testCase, limited));
-	const hidden = failures.length - shown.length;
-	if (hidden > 0) shown.push(`<p>…and ${hidden} more failed tests</p>`);
-	return [
-		`<h3>❌ ${escape(report.name)}</h3>`,
-		`<p><code>${escape(report.path)}</code></p>`,
-		...shown
+		"<table>",
+		row("th", [
+			"Suite",
+			"Passed",
+			"Skipped",
+			"Duration"
+		]),
+		...rows,
+		"</table>"
 	];
 }
-function renderFailure(testCase, limited) {
-	const title = testCase.suite && testCase.suite !== testCase.name ? `${testCase.suite} › ${testCase.name}` : testCase.name;
-	const message = testCase.message?.replace(ansiEscape, "");
-	const body = message ? `<pre><code>${escape(limited ? truncate(message) : message)}</code></pre>` : "<p>No failure message</p>";
-	return `<details><summary>${escape(title)}</summary>\n\n${body}\n</details>`;
+function renderFailures(cases, limited) {
+	const failures = cases.filter(({ status }) => status === "failed");
+	const shown = limited ? failures.slice(0, maxFailures) : failures;
+	const rows = shown.map((testCase) => row("td", [
+		escape(testCase.suite),
+		escape(testCase.name),
+		renderMessage(testCase.message, limited)
+	]));
+	const hidden = failures.length - shown.length;
+	return [
+		"<table>",
+		row("th", [
+			"Suite",
+			"Test",
+			"Failure"
+		]),
+		...rows,
+		"</table>",
+		...hidden > 0 ? [`<p>…and ${hidden} more failed tests</p>`] : []
+	];
+}
+function renderMessage(message, limited) {
+	const text = message?.replace(ansiEscape, "").trim();
+	if (!text) return "No failure message";
+	const [firstLine] = text.split("\n");
+	return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(limited ? truncate(text) : text)}</code></pre>\n</details>`;
 }
 function truncate(message) {
 	const lines = message.split("\n");
@@ -92276,7 +92247,7 @@ async function readReport(file) {
 			cases: file.parse(content)
 		};
 	} catch (error$1) {
-		const message = error$1.message;
+		const message = error$1 instanceof Error ? error$1.message : String(error$1);
 		error(`Could not parse ${file.path}: ${message}`);
 		return {
 			name: file.name,
@@ -92296,7 +92267,8 @@ function jobName(name, matrix) {
 	if (name) return name;
 	try {
 		const values = JSON.parse(matrix);
-		return Object.values(values ?? {}).map((value) => typeof value === "string" ? value : JSON.stringify(value)).join(", ");
+		if (typeof values !== "object" || values === null) return "";
+		return Object.values(values).map((value) => typeof value === "string" ? value : JSON.stringify(value)).join(", ");
 	} catch {
 		return "";
 	}
@@ -92313,7 +92285,7 @@ function parseRetentionDays(input) {
 * main logic.
 */
 /* istanbul ignore next */
-run();
+await run();
 //#endregion
 export {};
 
