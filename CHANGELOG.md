@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.1](https://github.com/CallumKerson/test-reports-action/compare/v0.2.0...v0.2.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* **deps:** update brace-expansion to 1.1.21 and 2.1.7 ([#109](https://github.com/CallumKerson/test-reports-action/issues/109)) ([da3db4c](https://github.com/CallumKerson/test-reports-action/commit/da3db4c4626b325a057be5836d36e1741d28b7b8))
+* **deps:** update fast-xml-parser to 5.11.2 in @azure/core-xml ([#106](https://github.com/CallumKerson/test-reports-action/issues/106)) ([21de071](https://github.com/CallumKerson/test-reports-action/commit/21de07180638ef9a413cfe1c95a083145e29d3ac))
+* **deps:** update lodash to 4.18.1 ([#108](https://github.com/CallumKerson/test-reports-action/issues/108)) ([711347e](https://github.com/CallumKerson/test-reports-action/commit/711347e0530ff21664195697b272ea8386f2d447))
+* **deps:** update minimatch to 3.1.5, 5.1.9 and 9.0.9 ([#110](https://github.com/CallumKerson/test-reports-action/issues/110)) ([fe71d6c](https://github.com/CallumKerson/test-reports-action/commit/fe71d6c80d28b8d65ab5ea58928bc25fd8fff883))
+* **deps:** update undici to 6.29.0 ([#107](https://github.com/CallumKerson/test-reports-action/issues/107)) ([9e75d69](https://github.com/CallumKerson/test-reports-action/commit/9e75d697a995200f40a7f7feee5c03edabbc4a15))
+
 ## [0.2.0](https://github.com/CallumKerson/test-reports-action/compare/v0.1.1...v0.2.0) (2026-10-04)
 
 
