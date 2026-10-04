@@ -10,6 +10,8 @@ export const setFailed = vi.fn<typeof core.setFailed>()
 export const warning = vi.fn<typeof core.warning>()
 
 export const summary = {
-  addRaw: vi.fn<(text: string, addEOL?: boolean) => typeof summary>(),
-  write: vi.fn<() => Promise<typeof summary>>()
+  addRaw: vi.fn<(text: string, addEOL?: boolean) => typeof summary>(
+    () => summary
+  ),
+  write: vi.fn<() => Promise<typeof summary>>(async () => summary)
 }

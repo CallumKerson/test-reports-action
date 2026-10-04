@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 import type { TestCase, TestReport } from '../src/report.js'
@@ -21,12 +21,14 @@ const report = (name: string, cases: TestCase[]): TestReport => ({
   cases
 })
 
-describe('status.ts', () => {
-  beforeEach(() => {
+const triggeredBy = (payload: typeof github.context.payload): void => {
+  github.context.payload = payload
+  onTestFinished(() => {
     github.context.payload = {}
-    github.createCommitStatus.mockResolvedValue({})
   })
+}
 
+describe('status.ts', () => {
   it('sets a status for each report on the pushed commit', async () => {
     await setStatuses(
       'token',
@@ -78,7 +80,7 @@ describe('status.ts', () => {
   })
 
   it('sets statuses on the head of a pull request', async () => {
-    github.context.payload = { pull_request: { head: { sha: 'head-sha' } } }
+    triggeredBy({ pull_request: { head: { sha: 'head-sha' } } })
 
     await setStatuses('token', [report('unit', [])], '')
 
@@ -88,7 +90,7 @@ describe('status.ts', () => {
   })
 
   it('sets statuses on the commit that triggered a workflow_run', async () => {
-    github.context.payload = { workflow_run: { head_sha: 'run-sha' } }
+    triggeredBy({ workflow_run: { head_sha: 'run-sha' } })
 
     await setStatuses('token', [report('unit', [])], '')
 

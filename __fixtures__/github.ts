@@ -1,6 +1,8 @@
 import { vi } from 'vitest'
 
-export const createCommitStatus = vi.fn<(params: object) => Promise<unknown>>()
+export const createCommitStatus = vi.fn<(params: object) => Promise<unknown>>(
+  async () => ({})
+)
 
 export const getOctokit = vi.fn<
   () => { rest: { repos: { createCommitStatus: typeof createCommitStatus } } }

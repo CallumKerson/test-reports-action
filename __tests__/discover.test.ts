@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -11,9 +11,9 @@ const { parseGoTest } = await import('../src/gotest.js')
 const { parseJUnit } = await import('../src/junit.js')
 
 describe('discover.ts', () => {
-  let workspace: string
-
-  const files = async (...names: string[]): Promise<void> => {
+  const workspaceWith = async (...names: string[]): Promise<string> => {
+    const workspace = await mkdtemp(path.join(tmpdir(), 'discover-'))
+    onTestFinished(async () => rm(workspace, { recursive: true, force: true }))
     await Promise.all(
       names.map(async (name) => {
         const file = path.join(workspace, name)
@@ -21,18 +21,11 @@ describe('discover.ts', () => {
         await writeFile(file, '')
       })
     )
+    return workspace
   }
 
-  beforeEach(async () => {
-    workspace = await mkdtemp(path.join(tmpdir(), 'discover-'))
-  })
-
-  afterEach(async () => {
-    await rm(workspace, { recursive: true, force: true })
-  })
-
   it('finds reports of each format and names them after the file', async () => {
-    await files(
+    const workspace = await workspaceWith(
       'unit.junit.xml',
       'go/results.gotest.json',
       'other.xml',
@@ -60,7 +53,7 @@ describe('discover.ts', () => {
   })
 
   it('adds the directory to names that clash', async () => {
-    await files(
+    const workspace = await workspaceWith(
       'api/results.gotest.json',
       'worker/results.gotest.json',
       'results.junit.xml',
@@ -78,7 +71,10 @@ describe('discover.ts', () => {
   })
 
   it('uses the whole path for reports that only differ by format', async () => {
-    await files('ci/tests.junit.xml', 'ci/tests.gotest.json')
+    const workspace = await workspaceWith(
+      'ci/tests.junit.xml',
+      'ci/tests.gotest.json'
+    )
 
     const reports = await findReports(workspace)
 
@@ -89,6 +85,8 @@ describe('discover.ts', () => {
   })
 
   it('finds nothing in an empty workspace', async () => {
+    const workspace = await workspaceWith()
+
     await expect(findReports(workspace)).resolves.toStrictEqual([])
   })
 })

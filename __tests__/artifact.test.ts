@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readFile, rm } from 'node:fs/promises'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import * as artifact from '../__fixtures__/artifact.js'
 import * as core from '../__fixtures__/core.js'
@@ -16,15 +17,15 @@ const conflict = new Error(
 )
 
 describe('artifact.ts', () => {
-  afterEach(async () => {
-    await Promise.all(
-      artifact.uploadArtifact.mock.calls.map(async ([, [file]]) =>
-        rm(path.dirname(file), { recursive: true, force: true })
-      )
-    )
-  })
+  // The summary is written to a directory in the runner's temp directory
+  const runnerTemp = async (): Promise<void> => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'artifact-'))
+    onTestFinished(async () => rm(directory, { recursive: true, force: true }))
+    vi.stubEnv('RUNNER_TEMP', directory)
+  }
 
   it('uploads the summary as an unzipped HTML page and links to it', async () => {
+    await runnerTemp()
     artifact.uploadArtifact.mockImplementation(async (name, [file]) => {
       await expect(readFile(file, 'utf8')).resolves.toContain(
         '<title>Test results</title></head>\n<body>\n<h2>Results</h2>\n</body>'
@@ -43,6 +44,7 @@ describe('artifact.ts', () => {
   })
 
   it('numbers the name when it is already taken', async () => {
+    await runnerTemp()
     artifact.uploadArtifact
       .mockRejectedValueOnce(conflict)
       .mockRejectedValueOnce(conflict)
@@ -61,6 +63,7 @@ describe('artifact.ts', () => {
   })
 
   it('warns when the upload fails', async () => {
+    await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue(new Error('Network down'))
 
     await expect(
@@ -72,6 +75,7 @@ describe('artifact.ts', () => {
   })
 
   it('warns when the upload throws something other than an Error', async () => {
+    await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue('Network down')
 
     await expect(
@@ -83,6 +87,7 @@ describe('artifact.ts', () => {
   })
 
   it('gives up when every name is taken', async () => {
+    await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue(conflict)
 
     await expect(
