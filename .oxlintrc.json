@@ -38,7 +38,6 @@
     "import/no-nodejs-modules": "off",
 
     // Arbitrary limits that would split code for no reader's benefit
-    "id-length": "off", // `_` and `i` in callbacks
     "max-params": "off", // mocks and helpers mirror the APIs they stand in for
     "max-statements": "off",
     "no-magic-numbers": "off", // test data, and units such as ms per second

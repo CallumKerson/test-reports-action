@@ -132,10 +132,13 @@ describe('summary.ts', () => {
   })
 
   describe('with many long failures', () => {
-    const message = Array.from({ length: 60 }, (_, i) => `line ${i}`).join('\n')
-    const failures = Array.from({ length: 53 }, (_, i) => ({
+    const message = Array.from(
+      { length: 60 },
+      (_value, index) => `line ${index}`
+    ).join('\n')
+    const failures = Array.from({ length: 53 }, (_value, index) => ({
       ...failed,
-      name: `test ${i}`,
+      name: `test ${index}`,
       message
     }))
 
@@ -168,9 +171,9 @@ describe('summary.ts', () => {
   describe('writeSummary', () => {
     // Each failure renders to just over 1 KiB, in full or cut short
     const big = (count: number): TestCase[] =>
-      Array.from({ length: count }, (_, i) => ({
+      Array.from({ length: count }, (_value, index) => ({
         ...failed,
-        name: `test ${i}`,
+        name: `test ${index}`,
         message: 'x'.repeat(1024)
       }))
     const written = (): string => core.summary.addRaw.mock.calls[0][0]
@@ -220,8 +223,8 @@ describe('summary.ts', () => {
 
     it('writes only the counts when the cut short summary is still too big', async () => {
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
-      const reports = Array.from({ length: 21 }, (_, i) =>
-        report(`unit${i}`, big(50))
+      const reports = Array.from({ length: 21 }, (_value, index) =>
+        report(`unit${index}`, big(50))
       )
 
       await writeSummary(reports, 7)
