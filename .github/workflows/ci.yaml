@@ -34,3 +34,38 @@ jobs:
       - name: Report hk and jest results with this action
         if: ${{ !cancelled() }}
         uses: ./
+
+  # Checks on a real runner that each leg of a matrix gets its own statuses,
+  # from the matrix default in action.yaml that no unit test can evaluate
+  matrix-names:
+    name: matrix-names (${{ matrix.leg }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    strategy:
+      matrix:
+        leg: [a, b]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install tooling
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - run: mise run package
+      - name: Write a passing report
+        run: |
+          mkdir -p reports
+          echo '<testsuite name="matrix"><testcase name="passes"/></testsuite>' > reports/matrix.junit.xml
+      - uses: ./
+      - name: Check the status is named after the matrix leg
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          CONTEXT: Tests (${{ matrix.leg }}) / matrix
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/commits/$SHA/statuses" --jq '.[].context' |
+            grep -Fqx "$CONTEXT" || {
+            echo "::error::No commit status named '$CONTEXT'"
+            exit 1
+          }
