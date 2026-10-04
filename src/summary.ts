@@ -123,10 +123,11 @@ function escape(text: string): string {
     .replaceAll('>', '&gt;')
 }
 
+// Each unit is chosen after rounding, so 59.96s shows as 1m 0s, not 60.0s
 export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${Math.round(ms)}ms`
-  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
-  const minutes = Math.floor(ms / 60_000)
-  const seconds = Math.round((ms % 60_000) / 1000)
-  return `${minutes}m ${seconds}s`
+  if (Math.round(ms) < 1000) return `${Math.round(ms)}ms`
+  const tenths = Math.round(ms / 100)
+  if (tenths < 600) return `${(tenths / 10).toFixed(1)}s`
+  const seconds = Math.round(ms / 1000)
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
 }
