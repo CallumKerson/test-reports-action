@@ -23,7 +23,6 @@
     "one-var": "off",
     "sort-imports": "off", // packages, then node:, then local files
     "sort-keys": "off", // keys follow the shape of the data
-    "init-declarations": "off", // set in hooks or try blocks
     "import/consistent-type-specifier-style": "off", // type imports are inline
     "import/exports-last": "off",
     "import/group-exports": "off",

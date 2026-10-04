@@ -130,12 +130,7 @@ function parseEvent(line: string): Event | undefined {
   if (!line.startsWith('{')) {
     return undefined
   }
-  let fields: unknown
-  try {
-    fields = JSON.parse(line)
-  } catch {
-    return undefined
-  }
+  const fields = parseJson(line)
   if (!isRecord(fields)) {
     return undefined
   }
@@ -147,6 +142,14 @@ function parseEvent(line: string): Event | undefined {
     Elapsed: typeof fields.Elapsed === 'number' ? fields.Elapsed : undefined,
     ImportPath: text(fields.ImportPath),
     FailedBuild: text(fields.FailedBuild)
+  }
+}
+
+function parseJson(line: string): unknown {
+  try {
+    return JSON.parse(line)
+  } catch {
+    return undefined
   }
 }
 
