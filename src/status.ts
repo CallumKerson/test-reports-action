@@ -1,6 +1,6 @@
-import { warning } from '@actions/core'
+import { type TestReport, countResults, describeCounts } from './report.js'
 import { context, getOctokit } from '@actions/github'
-import { countResults, describeCounts, type TestReport } from './report.js'
+import { warning } from '@actions/core'
 
 /**
  * Sets a commit status for each report, linking back to this run.

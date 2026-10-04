@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { readFile } from 'node:fs/promises'
 import { parseJUnit } from '../src/junit.js'
+import { readFile } from 'node:fs/promises'
 
 vi.setConfig({ testTimeout: 5000 })
 

@@ -1,13 +1,13 @@
+import { type ReportFile, findReports } from './discover.js'
+import { type TestReport, countResults } from './report.js'
 import {
-  error as logError,
   getInput,
   info,
+  error as logError,
   setFailed,
   warning
 } from '@actions/core'
 import { readFile } from 'node:fs/promises'
-import { findReports, type ReportFile } from './discover.js'
-import { countResults, type TestReport } from './report.js'
 import { setStatuses } from './status.js'
 import { writeSummary } from './summary.js'
 

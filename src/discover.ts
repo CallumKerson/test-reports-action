@@ -1,8 +1,8 @@
+import type { TestCase } from './report.js'
 import { create as createGlobber } from '@actions/glob'
-import path from 'node:path'
 import { parseGoTest } from './gotest.js'
 import { parseJUnit } from './junit.js'
-import type { TestCase } from './report.js'
+import path from 'node:path'
 
 const formats = [
   { suffix: '.junit.xml', parse: parseJUnit },

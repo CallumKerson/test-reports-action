@@ -21,7 +21,6 @@
     "func-style": "off", // functions are declared, not assigned
     "no-ternary": "off",
     "one-var": "off",
-    "sort-imports": "off", // packages, then node:, then local files
     "sort-keys": "off", // keys follow the shape of the data
     "import/consistent-type-specifier-style": "off", // type imports are inline
 

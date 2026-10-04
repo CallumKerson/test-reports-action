@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
-import { summary } from '../__fixtures__/core.js'
 import type { TestCase, TestReport } from '../src/report.js'
+import { describe, expect, it, vi } from 'vitest'
 import {
   formatDuration,
   maxSummaryBytes,
   renderSummary,
   writeSummary
 } from '../src/summary.js'
+import { summary } from '../__fixtures__/core.js'
 
 const { uploadFullSummary } = vi.hoisted(() => ({
   uploadFullSummary:

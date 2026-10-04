@@ -1,10 +1,10 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { tmpdir } from 'node:os'
 import { uploadArtifact } from '../__fixtures__/artifact.js'
-import { warning } from '../__fixtures__/core.js'
 import { uploadFullSummary } from '../src/artifact.js'
+import { warning } from '../__fixtures__/core.js'
 
 vi.mock(
   import('@actions/artifact'),

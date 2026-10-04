@@ -1,12 +1,12 @@
-import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import { warning } from '../__fixtures__/core.js'
+import type { TestCase, TestReport } from '../src/report.js'
 import {
   context,
   createCommitStatus,
   getOctokit
 } from '../__fixtures__/github.js'
-import type { TestCase, TestReport } from '../src/report.js'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { setStatuses } from '../src/status.js'
+import { warning } from '../__fixtures__/core.js'
 
 vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
 vi.mock(

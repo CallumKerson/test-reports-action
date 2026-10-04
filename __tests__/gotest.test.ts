@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { readFile } from 'node:fs/promises'
 import { parseGoTest } from '../src/gotest.js'
+import { readFile } from 'node:fs/promises'
 
 vi.setConfig({ testTimeout: 5000 })
 

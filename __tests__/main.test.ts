@@ -2,14 +2,14 @@
  * Unit tests for the action's main functionality, src/main.ts
  */
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import path from 'node:path'
 import { error, getInput, setFailed, warning } from '../__fixtures__/core.js'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import type { ReportFile } from '../src/discover.js'
 import type { TestReport } from '../src/report.js'
-import { run } from '../src/main.js'
 import { parseJUnit } from '../src/junit.js'
+import path from 'node:path'
+import { run } from '../src/main.js'
+import { tmpdir } from 'node:os'
 
 const { findReports, setStatuses, writeSummary } = vi.hoisted(() => ({
   findReports: vi.fn<(workspace: string) => Promise<ReportFile[]>>(),
