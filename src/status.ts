@@ -38,7 +38,12 @@ export async function setStatuses(
     } catch (error) {
       // A token without statuses: write, such as on a pull request from a
       // fork, can't set any status, but the summary is still worth having
-      if ((error as { status?: number }).status === 403) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'status' in error &&
+        error.status === 403
+      ) {
         core.warning(
           'Could not set commit statuses: the token needs the statuses: write permission'
         )

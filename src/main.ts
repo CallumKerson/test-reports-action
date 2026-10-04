@@ -58,7 +58,7 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   } catch (error) {
     // One broken report shouldn't hide the results of all the others, so it
     // becomes a failed test of its own
-    const message = (error as Error).message
+    const message = error instanceof Error ? error.message : String(error)
     core.error(`Could not parse ${file.path}: ${message}`)
     return {
       name: file.name,
@@ -82,8 +82,9 @@ async function readReport(file: ReportFile): Promise<TestReport> {
 function jobName(name: string, matrix: string): string {
   if (name) return name
   try {
-    const values = JSON.parse(matrix) as Record<string, unknown> | null
-    return Object.values(values ?? {})
+    const values: unknown = JSON.parse(matrix)
+    if (typeof values !== 'object' || values === null) return ''
+    return Object.values(values)
       .map((value) =>
         typeof value === 'string' ? value : JSON.stringify(value)
       )

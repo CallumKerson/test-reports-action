@@ -121,11 +121,30 @@ export function parseGoTest(ndjson: string): TestCase[] {
 function parseEvent(line: string): Event | undefined {
   // Build errors go to stderr, which is sometimes redirected into the file
   if (!line.startsWith('{')) return undefined
+  let fields: unknown
   try {
-    return JSON.parse(line) as Event
+    fields = JSON.parse(line)
   } catch {
     return undefined
   }
+  if (!isRecord(fields)) return undefined
+  return {
+    Action: text(fields.Action),
+    Package: text(fields.Package),
+    Test: text(fields.Test),
+    Output: text(fields.Output),
+    Elapsed: typeof fields.Elapsed === 'number' ? fields.Elapsed : undefined,
+    ImportPath: text(fields.ImportPath),
+    FailedBuild: text(fields.FailedBuild)
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function text(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
 }
 
 function applyEvent(test: Test, event: Event): void {

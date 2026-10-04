@@ -19,7 +19,8 @@ const parser = new XMLParser({
  * The root can be <testsuites> or a single <testsuite>, and suites can nest.
  */
 export function parseJUnit(xml: string): TestCase[] {
-  const document = parser.parse(xml) as XmlNode
+  const document: unknown = parser.parse(xml)
+  if (!isNode(document)) throw new Error('not a JUnit report: no elements')
   // jest-junit and others write a <testsuites> with no suites in it when no
   // tests ran
   if ('testsuites' in document) return parseSuites(document.testsuites)
@@ -30,16 +31,14 @@ export function parseJUnit(xml: string): TestCase[] {
 }
 
 function parseSuites(parent: unknown): TestCase[] {
-  // An element with no attributes or children parses as an empty string
-  if (typeof parent !== 'object' || parent === null) return []
-  const suites = (parent as XmlNode).testsuite as XmlNode[] | undefined
-  return (suites ?? []).flatMap(parseSuite)
+  if (!isNode(parent)) return []
+  return nodes(parent.testsuite).flatMap(parseSuite)
 }
 
 function parseSuite(suite: XmlNode): TestCase[] {
   const suiteName = attribute(suite, 'name')
-  const cases = ((suite.testcase as XmlNode[] | undefined) ?? []).map(
-    (testCase) => parseCase(testCase, suiteName)
+  const cases = nodes(suite.testcase).map((testCase) =>
+    parseCase(testCase, suiteName)
   )
   return [...cases, ...parseSuites(suite)]
 }
@@ -55,10 +54,7 @@ function parseCase(testCase: XmlNode, suiteName: string): TestCase {
     durationMs: seconds(attribute(testCase, 'time')) * 1000
   }
 
-  const problems = [
-    ...((testCase.failure as unknown[] | undefined) ?? []),
-    ...((testCase.error as unknown[] | undefined) ?? [])
-  ]
+  const problems = [...list(testCase.failure), ...list(testCase.error)]
   if (problems.length > 0) {
     result.status = 'failed'
     const message = problems.map(describe).filter(Boolean).join('\n\n')
@@ -73,9 +69,25 @@ function parseCase(testCase: XmlNode, suiteName: string): TestCase {
 // to the attributes when it is empty
 function describe(problem: unknown): string {
   if (typeof problem === 'string') return problem.trim()
-  const node = problem as XmlNode
-  const text = typeof node['#text'] === 'string' ? node['#text'].trim() : ''
-  return text || attribute(node, 'message') || attribute(node, 'type')
+  if (!isNode(problem)) return ''
+  const text =
+    typeof problem['#text'] === 'string' ? problem['#text'].trim() : ''
+  return text || attribute(problem, 'message') || attribute(problem, 'type')
+}
+
+function isNode(value: unknown): value is XmlNode {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// The parser makes arrays of the tags in isArray, so anything else is absent
+function list(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+// An element with no attributes or children parses as an empty string, which
+// is still an element, just one with nothing in it
+function nodes(value: unknown): XmlNode[] {
+  return list(value).map((item) => (isNode(item) ? item : {}))
 }
 
 function attribute(node: XmlNode, name: string): string {

@@ -40,10 +40,9 @@ export async function uploadFullSummary(
       )
       return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
     } catch (error) {
-      if (/\(409\)/.test((error as Error).message)) continue
-      core.warning(
-        `Could not upload the full summary: ${(error as Error).message}`
-      )
+      const message = error instanceof Error ? error.message : String(error)
+      if (/\(409\)/.test(message)) continue
+      core.warning(`Could not upload the full summary: ${message}`)
       return undefined
     }
   }
