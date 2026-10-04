@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import * as core from '../__fixtures__/core.js'
+import { summary } from '../__fixtures__/core.js'
 import type { TestCase, TestReport } from '../src/report.js'
 import {
   formatDuration,
@@ -199,7 +199,7 @@ describe('summary.ts', () => {
         name: `test ${index}`,
         message: 'x'.repeat(1024)
       }))
-    const written = (): string => core.summary.addRaw.mock.calls[0][0]
+    const written = (): string => summary.addRaw.mock.calls[0][0]
 
     it('writes the full summary when it fits', async () => {
       expect.hasAssertions()
@@ -209,8 +209,8 @@ describe('summary.ts', () => {
       expect(written()).toBe(
         renderSummary([report('unit', [passed, failed])], 'full')
       )
-      expect(core.summary.addRaw).toHaveBeenCalledWith(written(), true)
-      expect(core.summary.write).toHaveBeenCalledWith()
+      expect(summary.addRaw).toHaveBeenCalledWith(written(), true)
+      expect(summary.write).toHaveBeenCalledWith()
       expect(uploadFullSummary).not.toHaveBeenCalled()
     })
 

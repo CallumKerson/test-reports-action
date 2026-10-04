@@ -32,8 +32,7 @@
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
 
-    // @actions/* are used as namespaces, and an action runs on Node
-    "import/no-namespace": "off",
+    // An action runs on Node
     "import/no-nodejs-modules": "off",
 
     // Arbitrary limits that would split code for no reader's benefit
