@@ -20,6 +20,10 @@ zizmor = "1.30.1"
 # sourcemap, so a flat npm-style node_modules keeps them identical to an npm
 # build and free of aube's store paths, which differ between machines
 AUBE_NODE_LINKER = "hoisted"
+# 9.2.2 is octokit's backport of a ReDoS fix to the 9.x line, published after
+# 10.1.0 by the same octokitbot account but without provenance, so aube's
+# no-downgrade trust policy refuses it. Only @github/local-action uses it
+AUBE_TRUST_POLICY_EXCLUDE = "@octokit/plugin-paginate-rest@9.2.2"
 
 [task_config]
 includes = ["tasks"]
