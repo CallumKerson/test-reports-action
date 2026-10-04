@@ -46,15 +46,12 @@ export function parseGoTest(ndjson: string): TestCase[] {
   const tests = new Map<string, Test>()
   const packages = new Map<string, Package>()
   const builds = new Map<string, string[]>()
-  let events = 0
+  const events = ndjson
+    .split('\n')
+    .map(parseEvent)
+    .filter((event) => event !== undefined)
 
-  for (const line of ndjson.split('\n')) {
-    const event = parseEvent(line)
-    if (!event) {
-      continue
-    }
-    events += 1
-
+  for (const event of events) {
     if (event.ImportPath) {
       if (event.Action === 'build-output') {
         builds.set(event.ImportPath, [
@@ -62,13 +59,7 @@ export function parseGoTest(ndjson: string): TestCase[] {
           event.Output ?? ''
         ])
       }
-      continue
-    }
-    if (!event.Package) {
-      continue
-    }
-
-    if (event.Test) {
+    } else if (event.Package && event.Test) {
       const id = key(event.Package, event.Test)
       const test = tests.get(id) ?? {
         pkg: event.Package,
@@ -78,26 +69,25 @@ export function parseGoTest(ndjson: string): TestCase[] {
       }
       tests.set(id, test)
       applyEvent(test, event)
-      continue
-    }
-
-    const pkg = packages.get(event.Package) ?? {
-      failed: false,
-      elapsed: 0,
-      output: []
-    }
-    packages.set(event.Package, pkg)
-    if (event.Action === 'output') {
-      pkg.output.push(event.Output ?? '')
-    }
-    if (event.Action === 'fail') {
-      pkg.failed = true
-      pkg.failedBuild = event.FailedBuild
-      pkg.elapsed = event.Elapsed ?? 0
+    } else if (event.Package) {
+      const pkg = packages.get(event.Package) ?? {
+        failed: false,
+        elapsed: 0,
+        output: []
+      }
+      packages.set(event.Package, pkg)
+      if (event.Action === 'output') {
+        pkg.output.push(event.Output ?? '')
+      }
+      if (event.Action === 'fail') {
+        pkg.failed = true
+        pkg.failedBuild = event.FailedBuild
+        pkg.elapsed = event.Elapsed ?? 0
+      }
     }
   }
 
-  if (events === 0 && ndjson.trim()) {
+  if (events.length === 0 && ndjson.trim()) {
     throw new Error('not a go test -json report: no JSON events')
   }
 

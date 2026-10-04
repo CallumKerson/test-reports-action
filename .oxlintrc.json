@@ -19,7 +19,6 @@
     // the other one
     "capitalized-comments": "off", // wrapped comments continue in lower case
     "func-style": "off", // functions are declared, not assigned
-    "no-continue": "off",
     "no-ternary": "off",
     "one-var": "off",
     "sort-imports": "off", // packages, then node:, then local files
