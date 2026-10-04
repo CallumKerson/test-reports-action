@@ -129,6 +129,16 @@ function clean(output: string[]): string {
   return lines.map((line) => line.slice(indent).trimEnd()).join('\n')
 }
 
+function buildOutput(
+  builds: Map<string, string[]>,
+  failedBuild: string | undefined
+): string[] {
+  if (failedBuild) {
+    return builds.get(failedBuild) ?? []
+  }
+  return []
+}
+
 // A package can fail without a failing test, such as from a build error
 function packageFailures(
   packages: Map<string, Package>,
@@ -138,7 +148,7 @@ function packageFailures(
   return [...packages]
     .filter(([name, pkg]) => pkg.failed && !failedPackages.has(name))
     .map(([name, pkg]) => {
-      const output = pkg.failedBuild ? (builds.get(pkg.failedBuild) ?? []) : []
+      const output = buildOutput(builds, pkg.failedBuild)
       return {
         durationMs: pkg.elapsed * 1000,
         message: clean([...output, ...pkg.output]),
@@ -162,7 +172,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function text(value: unknown): string | undefined {
-  return typeof value === 'string' ? value : undefined
+  if (typeof value === 'string') {
+    return value
+  }
+  return undefined
+}
+
+function numeric(value: unknown): number | undefined {
+  if (typeof value === 'number') {
+    return value
+  }
+  return undefined
 }
 
 function parseEvent(line: string): Event | undefined {
@@ -176,7 +196,7 @@ function parseEvent(line: string): Event | undefined {
   }
   return {
     Action: text(fields.Action),
-    Elapsed: typeof fields.Elapsed === 'number' ? fields.Elapsed : undefined,
+    Elapsed: numeric(fields.Elapsed),
     FailedBuild: text(fields.FailedBuild),
     ImportPath: text(fields.ImportPath),
     Output: text(fields.Output),

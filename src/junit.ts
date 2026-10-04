@@ -15,17 +15,26 @@ const parser = new XMLParser({
 
 function attribute(node: XmlNode, name: string): string {
   const value = node[`@${name}`]
-  return typeof value === 'string' ? value : ''
+  if (typeof value === 'string') {
+    return value
+  }
+  return ''
 }
 
 function seconds(value: string): number {
   const parsed = parseFloat(value)
-  return Number.isFinite(parsed) ? parsed : 0
+  if (Number.isFinite(parsed)) {
+    return parsed
+  }
+  return 0
 }
 
 // The parser makes arrays of the tags in isArray, so anything else is absent
 function list(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : []
+  if (Array.isArray(value)) {
+    return value
+  }
+  return []
 }
 
 function isNode(value: unknown): value is XmlNode {
@@ -41,36 +50,57 @@ function describe(problem: unknown): string {
   if (!isNode(problem)) {
     return ''
   }
-  const text =
-    typeof problem['#text'] === 'string' ? problem['#text'].trim() : ''
-  return text || attribute(problem, 'message') || attribute(problem, 'type')
+  const text = problem['#text']
+  if (typeof text === 'string' && text.trim()) {
+    return text.trim()
+  }
+  return attribute(problem, 'message') || attribute(problem, 'type')
 }
 
 function parseOutcome(testCase: XmlNode): Pick<TestCase, 'status' | 'message'> {
   const problems = [...list(testCase.failure), ...list(testCase.error)]
-  if (problems.length === 0) {
-    return { status: testCase.skipped ? 'skipped' : 'passed' }
-  }
   const message = problems.map(describe).filter(Boolean).join('\n\n')
-  return message ? { message, status: 'failed' } : { status: 'failed' }
+  if (message) {
+    return { message, status: 'failed' }
+  }
+  if (problems.length > 0) {
+    return { status: 'failed' }
+  }
+  if (testCase.skipped) {
+    return { status: 'skipped' }
+  }
+  return { status: 'passed' }
+}
+
+// Some reporters, like jest-junit, repeat the test name as the class name
+function caseSuite(className: string, name: string, suiteName: string): string {
+  if (className && className !== name) {
+    return className
+  }
+  return suiteName
 }
 
 function parseCase(testCase: XmlNode, suiteName: string): TestCase {
   const name = attribute(testCase, 'name')
-  const className = attribute(testCase, 'classname')
   return {
     durationMs: seconds(attribute(testCase, 'time')) * 1000,
     name,
-    // Some reporters, like jest-junit, repeat the test name as the class name
-    suite: className && className !== name ? className : suiteName,
+    suite: caseSuite(attribute(testCase, 'classname'), name, suiteName),
     ...parseOutcome(testCase)
   }
 }
 
 // An element with no attributes or children parses as an empty string, which
 // is still an element, just one with nothing in it
+function asNode(item: unknown): XmlNode {
+  if (isNode(item)) {
+    return item
+  }
+  return {}
+}
+
 function nodes(value: unknown): XmlNode[] {
-  return list(value).map((item) => (isNode(item) ? item : {}))
+  return list(value).map(asNode)
 }
 
 function parseSuites(parent: unknown): TestCase[] {

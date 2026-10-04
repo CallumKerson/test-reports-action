@@ -47,6 +47,7 @@ On `main`, `dist/` is the latest release's build, not a build of `main`.
   `Tests / <name>` commit statuses
 - `src/artifact.ts` - uploads the full summary as an artifact when it is over
   GitHub's 1 MiB limit, and the job summary is cut short
+- `src/text.ts` - plurals and error messages, shared by the modules above
 - `__tests__/` - Vitest tests, which mock `@actions/core`, `@actions/github` and
   `@actions/artifact` with the stubs in `__fixtures__/`
 - `__fixtures__/junit/*.xml`, `__fixtures__/gotest/*.jsonl` - sample reports,

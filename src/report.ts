@@ -39,8 +39,11 @@ function describeCounts(counts: TestCounts): string {
   const parts = (['passed', 'failed', 'skipped'] as const)
     .filter((status) => counts[status] > 0)
     .map((status) => `${counts[status]} ${status}`)
-  return parts.length > 0 ? parts.join(', ') : 'No tests'
+  if (parts.length === 0) {
+    return 'No tests'
+  }
+  return parts.join(', ')
 }
 
 export { countResults, describeCounts }
-export type { TestCase, TestReport, TestStatus }
+export type { TestCase, TestCounts, TestReport, TestStatus }

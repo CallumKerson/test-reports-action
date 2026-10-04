@@ -1,9 +1,11 @@
 import {
   type TestCase,
+  type TestCounts,
   type TestReport,
   countResults,
   describeCounts
 } from './report.js'
+import { plural } from './text.js'
 import { summary } from '@actions/core'
 import { uploadFullSummary } from './artifact.js'
 
@@ -77,9 +79,9 @@ function renderSuites(cases: TestCase[]): string[] {
   ]
 }
 
-function truncate(message: string): string {
+function truncate(message: string, limited: boolean): string {
   const lines = message.split('\n')
-  if (lines.length <= maxLines) {
+  if (!limited || lines.length <= maxLines) {
     return message
   }
   const hidden = lines.length - maxLines
@@ -95,12 +97,19 @@ function renderMessage(message: string | undefined, limited: boolean): string {
     return 'No failure message'
   }
   const [firstLine] = text.split('\n')
-  return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(limited ? truncate(text) : text)}</code></pre>\n</details>`
+  return `<details><summary>${escape(firstLine)}</summary>\n\n<pre><code>${escape(truncate(text, limited))}</code></pre>\n</details>`
+}
+
+function shownFailures(failures: TestCase[], limited: boolean): TestCase[] {
+  if (limited) {
+    return failures.slice(0, maxFailures)
+  }
+  return failures
 }
 
 function renderFailures(cases: TestCase[], limited: boolean): string[] {
   const failures = cases.filter(({ status }) => status === 'failed')
-  const shown = limited ? failures.slice(0, maxFailures) : failures
+  const shown = shownFailures(failures, limited)
   const rows = shown.map((testCase) =>
     row('td', [
       escape(testCase.suite),
@@ -108,31 +117,42 @@ function renderFailures(cases: TestCase[], limited: boolean): string[] {
       renderMessage(testCase.message, limited)
     ])
   )
-  const hidden = failures.length - shown.length
-  return [
+  const table = [
     '<table>',
     row('th', ['Suite', 'Test', 'Failure']),
     ...rows,
-    '</table>',
-    ...(hidden > 0 ? [`<p>…and ${hidden} more failed tests</p>`] : [])
+    '</table>'
   ]
+  const hidden = failures.length - shown.length
+  if (hidden > 0) {
+    return [...table, `<p>…and ${hidden} more failed tests</p>`]
+  }
+  return table
+}
+
+function icon(counts: TestCounts): string {
+  if (counts.failed > 0) {
+    return '❌'
+  }
+  return '✅'
 }
 
 function renderReport(report: TestReport, detail: Detail): string {
   const counts = countResults(report.cases)
-  const icon = counts.failed > 0 ? '❌' : '✅'
   const heading = [
-    `<h3>${icon} ${escape(report.name)}</h3>`,
+    `<h3>${icon(counts)} ${escape(report.name)}</h3>`,
     `<p><code>${escape(report.path)}</code> · ${describeCounts(counts)} · ${formatDuration(counts.durationMs)}</p>`
   ]
   if (detail === 'none' || report.cases.length === 0) {
     return heading.join('\n')
   }
-  const table =
-    counts.failed > 0
-      ? renderFailures(report.cases, detail === 'limited')
-      : renderSuites(report.cases)
-  return [...heading, ...table].join('\n')
+  if (counts.failed > 0) {
+    return [
+      ...heading,
+      ...renderFailures(report.cases, detail === 'limited')
+    ].join('\n')
+  }
+  return [...heading, ...renderSuites(report.cases)].join('\n')
 }
 
 function renderSummary(reports: TestReport[], detail: Detail): string {
@@ -140,6 +160,22 @@ function renderSummary(reports: TestReport[], detail: Detail): string {
     '<h2>Test results</h2>',
     ...reports.map((report) => renderReport(report, detail))
   ].join('\n')
+}
+
+function cutShortNote(url: string | undefined, retentionDays: number): string {
+  if (!url) {
+    return "<p>⚠️ Cut short to fit GitHub's 1 MiB limit.</p>"
+  }
+  return `<p>⚠️ Cut short to fit GitHub's 1 MiB limit. <a href="${url}">Download the full summary</a>, which is kept for ${plural(retentionDays, 'day')}.</p>`
+}
+
+// Many failing reports can be too big even when each one is cut short
+function cutShort(reports: TestReport[], note: string): string {
+  const limited = `${renderSummary(reports, 'limited')}\n${note}`
+  if (fits(limited)) {
+    return limited
+  }
+  return `${renderSummary(reports, 'none')}\n${note}`
 }
 
 /**
@@ -160,15 +196,8 @@ async function writeSummary(
   }
 
   const url = await uploadFullSummary(full, retentionDays)
-  const note = url
-    ? `<p>⚠️ Cut short to fit GitHub's 1 MiB limit. <a href="${url}">Download the full summary</a>, which is kept for ${retentionDays} ${retentionDays === 1 ? 'day' : 'days'}.</p>`
-    : "<p>⚠️ Cut short to fit GitHub's 1 MiB limit.</p>"
-  // Many failing reports can be too big even when each one is cut short
-  const limited = `${renderSummary(reports, 'limited')}\n${note}`
-  const shown = fits(limited)
-    ? limited
-    : `${renderSummary(reports, 'none')}\n${note}`
-  await summary.addRaw(shown, true).write()
+  const note = cutShortNote(url, retentionDays)
+  await summary.addRaw(cutShort(reports, note), true).write()
 }
 
 export { formatDuration, maxSummaryBytes, renderSummary, writeSummary }

@@ -1,6 +1,7 @@
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import artifact from '@actions/artifact'
 import { context } from '@actions/github'
+import { errorMessage } from './text.js'
 import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { warning } from '@actions/core'
@@ -16,15 +17,19 @@ interface Upload {
   retentionDays: number
 }
 
+// Unzipped uploads are named after the file
+function fileName(base: string, attempt: number): string {
+  if (attempt === 1) {
+    return `${base}.html`
+  }
+  return `${base}-${attempt}.html`
+}
+
 async function uploadAttempt(
   { directory, base, content, retentionDays }: Upload,
   attempt: number
 ): Promise<string> {
-  // Unzipped uploads are named after the file
-  const file = path.join(
-    directory,
-    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
-  )
+  const file = path.join(directory, fileName(base, attempt))
   await writeFile(file, content)
   const { id } = await artifact.uploadArtifact(
     path.basename(file),
@@ -51,7 +56,7 @@ async function upload(
   try {
     return await uploadAttempt(options, attempt)
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    const message = errorMessage(error)
     if (/\(409\)/.test(message)) {
       return upload(options, attempt + 1)
     }
