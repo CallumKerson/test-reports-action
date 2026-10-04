@@ -3,8 +3,8 @@ import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 import type { TestCase, TestReport } from '../src/report.js'
 
-vi.doMock('@actions/core', () => core)
-vi.doMock('@actions/github', () => github)
+vi.doMock(import('@actions/core'), () => core)
+vi.doMock(import('@actions/github'), () => github)
 
 const { setStatuses } = await import('../src/status.js')
 
@@ -49,7 +49,7 @@ describe('status.ts', () => {
       sha: 'merge-sha',
       target_url: 'https://github.com/octo/app/actions/runs/42'
     }
-    expect(github.createCommitStatus.mock.calls).toEqual([
+    expect(github.createCommitStatus.mock.calls).toStrictEqual([
       [
         {
           ...common,
@@ -114,8 +114,7 @@ describe('status.ts', () => {
 
     await setStatuses('token', [report('a', []), report('b', [])], '')
 
-    expect(core.warning).toHaveBeenCalledTimes(1)
-    expect(core.warning).toHaveBeenCalledWith(
+    expect(core.warning).toHaveBeenCalledExactlyOnceWith(
       expect.stringContaining('statuses: write')
     )
   })

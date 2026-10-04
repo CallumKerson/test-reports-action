@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import * as core from '../__fixtures__/core.js'
 
-vi.doMock('@actions/core', () => core)
+vi.doMock(import('@actions/core'), () => core)
 
 const { findReports } = await import('../src/discover.js')
 const { parseGoTest } = await import('../src/gotest.js')
@@ -43,7 +43,7 @@ describe('discover.ts', () => {
 
     const reports = await findReports(workspace)
 
-    expect(reports).toEqual([
+    expect(reports).toStrictEqual([
       {
         file: path.join(workspace, 'go/results.gotest.json'),
         path: 'go/results.gotest.json',
@@ -69,7 +69,7 @@ describe('discover.ts', () => {
 
     const reports = await findReports(workspace)
 
-    expect(reports.map(({ name }) => name)).toEqual([
+    expect(reports.map(({ name }) => name)).toStrictEqual([
       'api/results',
       'results',
       'unit',
@@ -82,13 +82,13 @@ describe('discover.ts', () => {
 
     const reports = await findReports(workspace)
 
-    expect(reports.map(({ name }) => name)).toEqual([
+    expect(reports.map(({ name }) => name)).toStrictEqual([
       'ci/tests.gotest.json',
       'ci/tests.junit.xml'
     ])
   })
 
   it('Finds nothing in an empty workspace', async () => {
-    expect(await findReports(workspace)).toEqual([])
+    await expect(findReports(workspace)).resolves.toStrictEqual([])
   })
 })

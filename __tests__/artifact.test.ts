@@ -5,9 +5,9 @@ import * as artifact from '../__fixtures__/artifact.js'
 import * as core from '../__fixtures__/core.js'
 import * as github from '../__fixtures__/github.js'
 
-vi.doMock('@actions/artifact', () => artifact)
-vi.doMock('@actions/core', () => core)
-vi.doMock('@actions/github', () => github)
+vi.doMock(import('@actions/artifact'), () => artifact)
+vi.doMock(import('@actions/core'), () => core)
+vi.doMock(import('@actions/github'), () => github)
 
 const { uploadFullSummary } = await import('../src/artifact.js')
 
@@ -26,7 +26,7 @@ describe('artifact.ts', () => {
 
   it('Uploads the summary as an unzipped HTML page and links to it', async () => {
     artifact.uploadArtifact.mockImplementation(async (name, [file]) => {
-      expect(await readFile(file, 'utf8')).toContain(
+      await expect(readFile(file, 'utf8')).resolves.toContain(
         '<title>Test results</title></head>\n<body>\n<h2>Results</h2>\n</body>'
       )
       return { id: 7 }
@@ -39,7 +39,7 @@ describe('artifact.ts', () => {
     expect(name).toBe('test-results-test.html')
     expect(path.basename(file)).toBe(name)
     expect(root).toBe(path.dirname(file))
-    expect(options).toEqual({ retentionDays: 3, skipArchive: true })
+    expect(options).toStrictEqual({ retentionDays: 3, skipArchive: true })
   })
 
   it('Numbers the name when it is already taken', async () => {
@@ -51,7 +51,9 @@ describe('artifact.ts', () => {
     const url = await uploadFullSummary('<h2>Results</h2>', 7)
 
     expect(url).toBe('https://github.com/octo/app/actions/runs/42/artifacts/9')
-    expect(artifact.uploadArtifact.mock.calls.map(([name]) => name)).toEqual([
+    expect(
+      artifact.uploadArtifact.mock.calls.map(([name]) => name)
+    ).toStrictEqual([
       'test-results-test.html',
       'test-results-test-2.html',
       'test-results-test-3.html'
@@ -61,7 +63,9 @@ describe('artifact.ts', () => {
   it('Warns when the upload fails', async () => {
     artifact.uploadArtifact.mockRejectedValue(new Error('Network down'))
 
-    expect(await uploadFullSummary('<h2>Results</h2>', 7)).toBeUndefined()
+    await expect(
+      uploadFullSummary('<h2>Results</h2>', 7)
+    ).resolves.toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
@@ -70,7 +74,9 @@ describe('artifact.ts', () => {
   it('Warns when the upload throws something other than an Error', async () => {
     artifact.uploadArtifact.mockRejectedValue('Network down')
 
-    expect(await uploadFullSummary('<h2>Results</h2>', 7)).toBeUndefined()
+    await expect(
+      uploadFullSummary('<h2>Results</h2>', 7)
+    ).resolves.toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith(
       'Could not upload the full summary: Network down'
     )
@@ -79,7 +85,9 @@ describe('artifact.ts', () => {
   it('Gives up when every name is taken', async () => {
     artifact.uploadArtifact.mockRejectedValue(conflict)
 
-    expect(await uploadFullSummary('<h2>Results</h2>', 7)).toBeUndefined()
+    await expect(
+      uploadFullSummary('<h2>Results</h2>', 7)
+    ).resolves.toBeUndefined()
     expect(artifact.uploadArtifact).toHaveBeenCalledTimes(50)
     expect(core.warning).toHaveBeenCalledWith(
       'Could not upload the full summary: test-results-test.html to test-results-test-50.html are all taken'
