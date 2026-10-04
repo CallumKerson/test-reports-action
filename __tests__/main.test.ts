@@ -187,7 +187,7 @@ describe('main.ts', () => {
     // The default in action.yaml, as local-action leaves it unevaluated
     // oxlint-disable-next-line no-template-curly-in-string
     ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
-  ])('names the job after %s', async (_, name, matrix, expected) => {
+  ])('names the job after %s', async (_title, name, matrix, expected) => {
     core.getInput.mockImplementation(
       (input) =>
         ({ token: 'token', 'retention-days': '7', name, matrix })[input] ?? ''

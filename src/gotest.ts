@@ -97,7 +97,9 @@ export function parseGoTest(ndjson: string): TestCase[] {
     .filter((test) => isReported(test, parents, failedParents))
     .map(toCase)
   const failedPackages = new Set(
-    cases.filter((c) => c.status === 'failed').map((c) => c.suite)
+    cases
+      .filter((testCase) => testCase.status === 'failed')
+      .map((testCase) => testCase.suite)
   )
 
   return [...cases, ...packageFailures(packages, builds, failedPackages)]
@@ -175,8 +177,8 @@ function findParents(all: Test[]): {
   const failedParents = new Set<string>()
   for (const test of all) {
     const parts = test.name.split('/')
-    for (let i = 1; i < parts.length; i += 1) {
-      const parent = key(test.pkg, parts.slice(0, i).join('/'))
+    for (let depth = 1; depth < parts.length; depth += 1) {
+      const parent = key(test.pkg, parts.slice(0, depth).join('/'))
       parents.add(parent)
       if (status(test) === 'failed') {
         failedParents.add(parent)
