@@ -7,6 +7,8 @@ import {
 import { context, getOctokit } from '@actions/github'
 import { warning } from '@actions/core'
 
+const forbidden = 403
+
 const statusPrefix = (jobName: string): string => {
   if (jobName) {
     return `Tests (${jobName})`
@@ -63,7 +65,7 @@ export const setStatuses = async (
       typeof error === 'object' &&
       error !== null &&
       'status' in error &&
-      error.status === 403
+      error.status === forbidden
     ) {
       warning(
         'Could not set commit statuses: the token needs the statuses: write permission'

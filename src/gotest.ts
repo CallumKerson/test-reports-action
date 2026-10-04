@@ -1,4 +1,4 @@
-import type { TestCase, TestStatus } from './report.js'
+import { type TestCase, type TestStatus, msPerSecond } from './report.js'
 
 interface Event {
   Action: string | null
@@ -149,7 +149,7 @@ const packageFailures = (
     .map(([name, pkg]) => {
       const output = buildOutput(builds, pkg.failedBuild)
       return {
-        durationMs: pkg.elapsed * 1000,
+        durationMs: pkg.elapsed * msPerSecond,
         message: clean([...output, ...pkg.output]),
         name,
         status: 'failed',
@@ -244,7 +244,7 @@ const isReported = (
 
 const toCase = (test: Test): TestCase => {
   const result: TestCase = {
-    durationMs: test.elapsed * 1000,
+    durationMs: test.elapsed * msPerSecond,
     name: test.name,
     status: status(test),
     suite: test.pkg

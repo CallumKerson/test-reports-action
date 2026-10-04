@@ -3,16 +3,21 @@ import {
   type TestCounts,
   type TestReport,
   countResults,
-  describeCounts
+  describeCounts,
+  msPerSecond
 } from './report.js'
 import { plural } from './text.js'
 import { summary } from '@actions/core'
 import { uploadFullSummary } from './artifact.js'
 
+const bytesPerKiB = 1024
 // GitHub rejects a step summary over 1 MiB
-const maxSummaryBytes = 1024 * 1024
+const maxSummaryBytes = bytesPerKiB * bytesPerKiB
 const maxFailures = 50
 const maxLines = 50
+const tenthsPerSecond = 10
+const msPerTenth = msPerSecond / tenthsPerSecond
+const secondsPerMinute = 60
 
 // Terminal colours and styles, which test runners leave in their output
 // oxlint-disable-next-line no-control-regex -- matching ESC is the point
@@ -35,15 +40,15 @@ const escape = (text: string): string =>
 
 // Each unit is chosen after rounding, so 59.96s shows as 1m 0s, not 60.0s
 const formatDuration = (ms: number): string => {
-  if (Math.round(ms) < 1000) {
+  if (Math.round(ms) < msPerSecond) {
     return `${Math.round(ms)}ms`
   }
-  const tenths = Math.round(ms / 100)
-  if (tenths < 600) {
-    return `${(tenths / 10).toFixed(1)}s`
+  const tenths = Math.round(ms / msPerTenth)
+  if (tenths < secondsPerMinute * tenthsPerSecond) {
+    return `${(tenths / tenthsPerSecond).toFixed(1)}s`
   }
-  const seconds = Math.round(ms / 1000)
-  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+  const seconds = Math.round(ms / msPerSecond)
+  return `${Math.floor(seconds / secondsPerMinute)}m ${seconds % secondsPerMinute}s`
 }
 
 // When everything passed, a row per test would be long and say nothing more
