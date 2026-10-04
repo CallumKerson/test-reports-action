@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#MISE description="Checks that dist/ is a fresh build of src/"
+#MISE depends=["package"]
+
+set -euo pipefail
+
+if [ -z "$(git status --porcelain dist/)" ]; then
+	echo "dist/ is up to date"
+	exit 0
+fi
+
+# The full diff includes the one-line sourcemap, which is too big for the
+# Actions UI, so this only lists the files
+git status --short dist/
+
+# On a pull request, HEAD is a merge commit, so CI passes the PR's own head
+head_sha=${HEAD_SHA:-HEAD}
+
+# release-please pushes its commit before the release workflow commits dist/,
+# so this can fail for a minute on a release PR
+if [[ "$(git log -1 --format=%s "$head_sha")" == "chore(main): release "* ]]; then
+	echo "::error::dist/ is out of date with src/." \
+		"On a release PR, the release workflow commits dist/ shortly after" \
+		"release-please updates it, which re-runs this check"
+else
+	echo "::error::dist/ is out of date with src/." \
+		"Run mise run package, or download the expected dist/ from CI"
+fi
+exit 1

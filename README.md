@@ -89,6 +89,7 @@ before any `mise run` task when `package.json` or `package-lock.json` change.
 | `mise run test`         | Runs the unit tests with coverage                   |
 | `mise run typecheck`    | Type checks the action source                       |
 | `mise run package`      | Bundles the action into `dist/`                     |
+| `mise run check-dist`   | Checks `dist/` is a fresh build of `src/`           |
 | `mise run local-action` | Runs the action locally with inputs from `.env`     |
 | `mise run check`        | Lints changed files (`check-all` for every file)    |
 | `mise run fix`          | Fixes changed files (`fix-all` for every file)      |

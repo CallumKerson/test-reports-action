@@ -34,17 +34,12 @@ jobs:
       - name: Install tooling
         if: ${{ startsWith(github.head_ref, 'release-please--') }}
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-      - if: ${{ startsWith(github.head_ref, 'release-please--') }}
-        run: mise run package
       - name: Compare dist/
         id: diff
         if: ${{ startsWith(github.head_ref, 'release-please--') }}
-        run: |
-          if [ -n "$(git status --porcelain dist/)" ]; then
-            echo "dist/ is out of date with src/:"
-            git diff --text dist/
-            exit 1
-          fi
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: mise run check-dist
       - name: Upload expected dist/
         if: ${{ failure() && steps.diff.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
