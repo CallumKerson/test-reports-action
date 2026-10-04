@@ -13,7 +13,7 @@ vi.setConfig({ testTimeout: 5000 })
 describe('discover.ts', () => {
   const workspaceWith = async (...names: string[]): Promise<string> => {
     const workspace = await mkdtemp(path.join(tmpdir(), 'discover-'))
-    onTestFinished(async () => rm(workspace, { recursive: true, force: true }))
+    onTestFinished(async () => rm(workspace, { force: true, recursive: true }))
     await Promise.all(
       names.map(async (name) => {
         const file = path.join(workspace, name)
@@ -41,15 +41,15 @@ describe('discover.ts', () => {
     expect(reports).toStrictEqual([
       {
         file: path.join(workspace, 'go/results.gotest.json'),
-        path: 'go/results.gotest.json',
         name: 'results',
-        parse: parseGoTest
+        parse: parseGoTest,
+        path: 'go/results.gotest.json'
       },
       {
         file: path.join(workspace, 'unit.junit.xml'),
-        path: 'unit.junit.xml',
         name: 'unit',
-        parse: parseJUnit
+        parse: parseJUnit,
+        path: 'unit.junit.xml'
       }
     ])
   })

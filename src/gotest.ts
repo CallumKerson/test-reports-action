@@ -33,8 +33,8 @@ interface Results {
 }
 
 const statuses: Record<string, TestStatus> = {
-  pass: 'passed',
   fail: 'failed',
+  pass: 'passed',
   skip: 'skipped'
 }
 
@@ -87,18 +87,18 @@ function record({ tests, packages, builds }: Results, event: Event): void {
   } else if (pkg && name) {
     applyEvent(
       getOrAdd(tests, key(pkg, name), () => ({
-        pkg,
-        name,
         elapsed: 0,
-        output: []
+        name,
+        output: [],
+        pkg
       })),
       event
     )
   } else if (pkg) {
     applyPackageEvent(
       getOrAdd(packages, pkg, () => ({
-        failed: false,
         elapsed: 0,
+        failed: false,
         output: []
       })),
       event
@@ -108,9 +108,9 @@ function record({ tests, packages, builds }: Results, event: Event): void {
 
 function collect(events: Event[]): Results {
   const results: Results = {
-    tests: new Map(),
+    builds: new Map(),
     packages: new Map(),
-    builds: new Map()
+    tests: new Map()
   }
   for (const event of events) {
     record(results, event)
@@ -140,11 +140,11 @@ function packageFailures(
     .map(([name, pkg]) => {
       const output = pkg.failedBuild ? (builds.get(pkg.failedBuild) ?? []) : []
       return {
-        suite: name,
+        durationMs: pkg.elapsed * 1000,
+        message: clean([...output, ...pkg.output]),
         name,
         status: 'failed',
-        durationMs: pkg.elapsed * 1000,
-        message: clean([...output, ...pkg.output])
+        suite: name
       }
     })
 }
@@ -176,12 +176,12 @@ function parseEvent(line: string): Event | undefined {
   }
   return {
     Action: text(fields.Action),
-    Package: text(fields.Package),
-    Test: text(fields.Test),
-    Output: text(fields.Output),
     Elapsed: typeof fields.Elapsed === 'number' ? fields.Elapsed : undefined,
+    FailedBuild: text(fields.FailedBuild),
     ImportPath: text(fields.ImportPath),
-    FailedBuild: text(fields.FailedBuild)
+    Output: text(fields.Output),
+    Package: text(fields.Package),
+    Test: text(fields.Test)
   }
 }
 
@@ -208,7 +208,7 @@ function findParents(all: Test[]): {
       }
     }
   }
-  return { parents, failedParents }
+  return { failedParents, parents }
 }
 
 // A parent test fails whenever a subtest does, so it is only worth reporting
@@ -227,10 +227,10 @@ function isReported(
 
 function toCase(test: Test): TestCase {
   const result: TestCase = {
-    suite: test.pkg,
+    durationMs: test.elapsed * 1000,
     name: test.name,
     status: status(test),
-    durationMs: test.elapsed * 1000
+    suite: test.pkg
   }
   if (result.status === 'failed') {
     const message = clean(test.output)

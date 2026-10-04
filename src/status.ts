@@ -29,10 +29,10 @@ export async function setStatuses(
         const counts = countResults(report.cases)
         return octokit.rest.repos.createCommitStatus({
           ...context.repo,
-          sha,
-          state: counts.failed > 0 ? 'failure' : 'success',
           context: `${prefix} / ${report.name}`,
           description: describeCounts(counts),
+          sha,
+          state: counts.failed > 0 ? 'failure' : 'success',
           target_url: targetUrl
         })
       })

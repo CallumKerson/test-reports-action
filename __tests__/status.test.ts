@@ -17,16 +17,16 @@ vi.mock(
 vi.setConfig({ testTimeout: 5000 })
 
 const testCase = (status: TestCase['status']): TestCase => ({
-  suite: 's',
+  durationMs: 0,
   name: 't',
   status,
-  durationMs: 0
+  suite: 's'
 })
 
 const report = (name: string, cases: TestCase[]): TestReport => ({
+  cases,
   name,
-  path: `${name}.junit.xml`,
-  cases
+  path: `${name}.junit.xml`
 })
 
 const triggeredBy = (payload: typeof context.payload): void => {
@@ -65,25 +65,25 @@ describe('status.ts', () => {
       [
         {
           ...common,
-          state: 'success',
           context: 'Tests / unit',
-          description: '2 passed, 1 skipped'
+          description: '2 passed, 1 skipped',
+          state: 'success'
         }
       ],
       [
         {
           ...common,
-          state: 'failure',
           context: 'Tests / go',
-          description: '1 passed, 1 failed'
+          description: '1 passed, 1 failed',
+          state: 'failure'
         }
       ],
       [
         {
           ...common,
-          state: 'success',
           context: 'Tests / empty',
-          description: 'No tests'
+          description: 'No tests',
+          state: 'success'
         }
       ]
     ])

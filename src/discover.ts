@@ -5,8 +5,8 @@ import { parseJUnit } from './junit.js'
 import path from 'node:path'
 
 const formats = [
-  { suffix: '.junit.xml', parse: parseJUnit },
-  { suffix: '.gotest.json', parse: parseGoTest }
+  { parse: parseJUnit, suffix: '.junit.xml' },
+  { parse: parseGoTest, suffix: '.gotest.json' }
 ]
 
 // Commit statuses are keyed by name, so a name shared by two reports would
@@ -65,7 +65,7 @@ export async function findReports(workspace: string): Promise<ReportFile[]> {
     }
     const relative = path.relative(workspace, file).split(path.sep).join('/')
     return [
-      { file, path: relative, suffix: format.suffix, parse: format.parse }
+      { file, parse: format.parse, path: relative, suffix: format.suffix }
     ]
   })
 

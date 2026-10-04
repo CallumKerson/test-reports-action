@@ -84,5 +84,5 @@ export async function uploadFullSummary(
     path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
   )
   const base = `test-results-${context.job}`
-  return upload({ directory, base, content: page(html), retentionDays }, 1)
+  return upload({ base, content: page(html), directory, retentionDays }, 1)
 }

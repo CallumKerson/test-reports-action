@@ -24,7 +24,7 @@ interface TestCounts {
 }
 
 function countResults(cases: TestCase[]): TestCounts {
-  const counts = { passed: 0, failed: 0, skipped: 0, durationMs: 0 }
+  const counts = { durationMs: 0, failed: 0, passed: 0, skipped: 0 }
   for (const testCase of cases) {
     counts[testCase.status] += 1
     counts.durationMs += testCase.durationMs

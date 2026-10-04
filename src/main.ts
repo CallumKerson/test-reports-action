@@ -32,25 +32,25 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   info(`Reading ${file.path}`)
   const content = await readFile(file.file, 'utf8')
   try {
-    return { name: file.name, path: file.path, cases: file.parse(content) }
+    return { cases: file.parse(content), name: file.name, path: file.path }
   } catch (error) {
     // One broken report shouldn't hide the results of all the others, so it
     // becomes a failed test of its own
     const message = error instanceof Error ? error.message : String(error)
     logError(`Could not parse ${file.path}: ${message}`)
     return {
-      name: file.name,
-      path: file.path,
       cases: [
         {
-          suite: '',
+          durationMs: 0,
+          message,
           name: 'Could not parse report',
           status: 'failed',
-          durationMs: 0,
-          message
+          suite: ''
         }
       ],
-      parseError: message
+      name: file.name,
+      parseError: message,
+      path: file.path
     }
   }
 }

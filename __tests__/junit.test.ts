@@ -48,11 +48,11 @@ describe('junit.ts', () => {
     const cases = parseJUnit(await fixture('pytest.xml'))
 
     expect(cases[1]).toStrictEqual({
-      suite: 'tests.test_app',
+      durationMs: 2,
+      message: 'assert 1 == 2',
       name: 'test_bad',
       status: 'failed',
-      durationMs: 2,
-      message: 'assert 1 == 2'
+      suite: 'tests.test_app'
     })
   })
 
@@ -70,13 +70,13 @@ describe('junit.ts', () => {
       </testsuites>`)
 
     expect(cases).toStrictEqual([
-      { suite: 'outer', name: 'a', status: 'passed', durationMs: 0 },
+      { durationMs: 0, name: 'a', status: 'passed', suite: 'outer' },
       {
-        suite: 'inner',
+        durationMs: 0,
+        message: 'AssertionError',
         name: 'b',
         status: 'failed',
-        durationMs: 0,
-        message: 'AssertionError'
+        suite: 'inner'
       }
     ])
   })
@@ -103,7 +103,7 @@ describe('junit.ts', () => {
 
     expect(
       parseJUnit('<testsuite name="s"><testcase/></testsuite>')
-    ).toStrictEqual([{ suite: 's', name: '', status: 'passed', durationMs: 0 }])
+    ).toStrictEqual([{ durationMs: 0, name: '', status: 'passed', suite: 's' }])
   })
 
   it('leaves out the message of a failure with no details', () => {
@@ -114,10 +114,10 @@ describe('junit.ts', () => {
     )
 
     expect(testCase).toStrictEqual({
-      suite: '',
+      durationMs: 0,
       name: 'a',
       status: 'failed',
-      durationMs: 0
+      suite: ''
     })
   })
 
