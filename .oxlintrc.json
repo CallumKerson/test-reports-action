@@ -11,7 +11,8 @@
     "correctness": "error",
     "suspicious": "error",
     "perf": "error",
-    "style": "error"
+    "style": "error",
+    "restriction": "error"
   },
   "rules": {
     // Each of these picks one of two equally good styles, and the code uses
@@ -42,7 +43,19 @@
     "id-length": "off", // `_` and `i` in callbacks
     "max-params": "off", // mocks and helpers mirror the APIs they stand in for
     "max-statements": "off",
-    "no-magic-numbers": "off" // test data, and units such as ms per second
+    "no-magic-numbers": "off", // test data, and units such as ms per second
+
+    // Helpers are declared below the functions that call them
+    "no-use-before-define": "off",
+    // TypeScript's optional values are undefined, not null
+    "no-undefined": "off",
+    // An action reads its inputs and runner settings from the environment
+    "node/no-process-env": "off",
+    // The entry point awaits run(), and tests import modules after mocking
+    // them. An action is never loaded with require()
+    "node/no-top-level-await": "off",
+    // Tests import the source they test from ../src
+    "import/no-relative-parent-imports": "off"
   },
   "overrides": [
     {
@@ -55,7 +68,21 @@
         // Test names are sentences
         "vitest/prefer-lowercase-title": "off",
         // Every test already awaits what it asserts on
-        "vitest/prefer-expect-assertions": "off"
+        "vitest/prefer-expect-assertions": "off",
+        // The default timeout suits every test
+        "vitest/require-test-timeout": "off"
+      }
+    },
+    {
+      // Config files must export a default, as must the mock of
+      // @actions/artifact, which has one
+      "files": [
+        ".config/vitest.config.ts",
+        "tsdown.config.ts",
+        "__fixtures__/artifact.ts"
+      ],
+      "rules": {
+        "import/no-default-export": "off"
       }
     }
   ],

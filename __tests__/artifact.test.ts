@@ -18,7 +18,7 @@ const conflict = new Error(
 describe('artifact.ts', () => {
   afterEach(async () => {
     await Promise.all(
-      artifact.uploadArtifact.mock.calls.map(([, [file]]) =>
+      artifact.uploadArtifact.mock.calls.map(async ([, [file]]) =>
         rm(path.dirname(file), { recursive: true, force: true })
       )
     )

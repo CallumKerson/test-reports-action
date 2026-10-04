@@ -26,7 +26,7 @@ export interface TestCounts {
 export function countResults(cases: TestCase[]): TestCounts {
   const counts = { passed: 0, failed: 0, skipped: 0, durationMs: 0 }
   for (const testCase of cases) {
-    counts[testCase.status]++
+    counts[testCase.status] += 1
     counts.durationMs += testCase.durationMs
   }
   return counts

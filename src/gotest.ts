@@ -51,7 +51,7 @@ export function parseGoTest(ndjson: string): TestCase[] {
   for (const line of ndjson.split('\n')) {
     const event = parseEvent(line)
     if (!event) continue
-    events++
+    events += 1
 
     if (event.ImportPath) {
       if (event.Action === 'build-output') {
@@ -104,18 +104,27 @@ export function parseGoTest(ndjson: string): TestCase[] {
     cases.filter((c) => c.status === 'failed').map((c) => c.suite)
   )
 
-  for (const [name, pkg] of packages) {
-    if (!pkg.failed || failedPackages.has(name)) continue
-    const output = pkg.failedBuild ? (builds.get(pkg.failedBuild) ?? []) : []
-    cases.push({
-      suite: name,
-      name,
-      status: 'failed',
-      durationMs: pkg.elapsed * 1000,
-      message: clean([...output, ...pkg.output])
+  return [...cases, ...packageFailures(packages, builds, failedPackages)]
+}
+
+// A package can fail without a failing test, such as from a build error
+function packageFailures(
+  packages: Map<string, Package>,
+  builds: Map<string, string[]>,
+  failedPackages: Set<string>
+): TestCase[] {
+  return [...packages]
+    .filter(([name, pkg]) => pkg.failed && !failedPackages.has(name))
+    .map(([name, pkg]) => {
+      const output = pkg.failedBuild ? (builds.get(pkg.failedBuild) ?? []) : []
+      return {
+        suite: name,
+        name,
+        status: 'failed',
+        durationMs: pkg.elapsed * 1000,
+        message: clean([...output, ...pkg.output])
+      }
     })
-  }
-  return cases
 }
 
 function parseEvent(line: string): Event | undefined {
@@ -166,7 +175,7 @@ function findParents(all: Test[]): {
   const failedParents = new Set<string>()
   for (const test of all) {
     const parts = test.name.split('/')
-    for (let i = 1; i < parts.length; i++) {
+    for (let i = 1; i < parts.length; i += 1) {
       const parent = key(test.pkg, parts.slice(0, i).join('/'))
       parents.add(parent)
       if (status(test) === 'failed') failedParents.add(parent)

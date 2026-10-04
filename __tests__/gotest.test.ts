@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { parseGoTest } from '../src/gotest.js'
 
-const fixture = (name: string) =>
+const fixture = async (name: string): Promise<string> =>
   readFile(new URL(`../__fixtures__/gotest/${name}`, import.meta.url), 'utf8')
 
-const events = (...lines: object[]) =>
+const events = (...lines: object[]): string =>
   lines.map((line) => JSON.stringify(line)).join('\n')
 
 describe('gotest.ts', () => {
