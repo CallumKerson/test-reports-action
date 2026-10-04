@@ -208,7 +208,10 @@ describe('summary.ts', () => {
     [999, '999ms'],
     [1000, '1.0s'],
     [59_940, '59.9s'],
-    [125_000, '2m 5s']
+    [125_000, '2m 5s'],
+    [999.6, '1.0s'],
+    [59_960, '1m 0s'],
+    [119_600, '2m 0s']
   ])('Formats %d ms as %s', (ms, text) => {
     expect(formatDuration(ms)).toBe(text)
   })
