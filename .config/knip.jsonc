@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // The fixtures stand in for @actions/* modules, so src/ uses their exports
+  // through jest mocks, which knip can't follow
+  "entry": ["__fixtures__/*.ts"],
+  "jest": { "config": [".config/jest.config.js"] },
+  // Only mise tasks run these, which knip doesn't read
+  "ignoreDependencies": ["@github/local-action", "make-coverage-badge"]
+}

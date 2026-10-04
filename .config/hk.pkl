@@ -17,6 +17,16 @@ local linters = new Mapping<String, Step> {
         fix = "oxfmt --no-error-on-unmatched-pattern --write {{ files }}"
     }
     ["oxlint"] = Builtins.ox_lint
+    // knip looks for its config at the root, not in .config/
+    ["knip"] = (Builtins.knip) {
+        // knip checks the whole project whichever files changed, but only runs when a file matches, and a
+        // dependency added to package.json without code that uses it is still worth catching
+        glob = List("**/*.ts", "**/*.js", "package.json")
+        types = null
+        check = "aube exec knip --no-progress --config .config/knip.jsonc"
+        // Removing unused exports and dependencies is for a person to decide, not a pre-commit hook
+        fix = null
+    }
     ["ryl"] = Builtins.ryl
     ["tombi"] = Builtins.tombi
     ["tombi_format"] = Builtins.tombi_format
