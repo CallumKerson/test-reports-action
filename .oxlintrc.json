@@ -15,27 +15,15 @@
     "restriction": "error"
   },
   "rules": {
-    // Functions are consts, so one declaration per scope would put every
-    // function in a module in one const, and splits functions just to keep
-    // their declarations together
+    // With functions as consts, this would merge each module into one const
     "one-var": "off",
-
-    // no-duplicate-imports wants one import from each module, so types are
-    // imported inline, alongside the values from the same module
+    // Conflicts with no-duplicate-imports
     "import/consistent-type-specifier-style": "off",
-    // import/no-default-export is on, so modules export by name, which these
-    // forbid, or ask for a default in place of
+    // Conflict with import/no-default-export
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
-
-    // An action runs on Node
     "import/no-nodejs-modules": "off",
-
-    // Naming 0 and 1, as in `length > 0` and `count === 1`, tells a reader
-    // nothing
     "no-magic-numbers": ["error", { "ignore": [0, 1] }],
-
-    // An action reads its inputs and runner settings from the environment
     "node/no-process-env": "off"
   },
   "overrides": [
@@ -43,25 +31,17 @@
       "files": ["__tests__/**", "__fixtures__/**", ".config/vitest.config.ts"],
       "plugins": ["vitest"],
       "rules": {
-        // Conflicts with vitest/prefer-importing-vitest-globals, so tests
-        // import from vitest rather than using globals
+        // Conflicts with vitest/prefer-importing-vitest-globals
         "vitest/no-importing-vitest-globals": "off",
-        // Tests import the source they test from ../src
         "import/no-relative-parent-imports": "off",
-        // Mocks and stubbed environment variables stand for missing values with
-        // undefined, as the APIs they stand in for do
+        // Mocks mirror APIs that use undefined and take many parameters
         "no-undefined": "off",
-        // Test data is made of numbers, each only used once
-        "no-magic-numbers": "off",
-        // Mocks mirror the APIs they stand in for
         "max-params": "off",
-        // A describe block holds a statement for each of its tests
+        "no-magic-numbers": "off",
         "max-statements": "off"
       }
     },
     {
-      // Config files must export a default, as must the mock of
-      // @actions/artifact, which has one
       "files": [
         ".config/vitest.config.ts",
         "tsdown.config.ts",
