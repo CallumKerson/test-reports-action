@@ -1,11 +1,11 @@
+import {
+  type TestCase,
+  type TestReport,
+  countResults,
+  describeCounts
+} from './report.js'
 import { summary } from '@actions/core'
 import { uploadFullSummary } from './artifact.js'
-import {
-  countResults,
-  describeCounts,
-  type TestCase,
-  type TestReport
-} from './report.js'
 
 // GitHub rejects a step summary over 1 MiB
 const maxSummaryBytes = 1024 * 1024

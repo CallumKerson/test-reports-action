@@ -1,9 +1,9 @@
-import artifact from '@actions/artifact'
-import { warning } from '@actions/core'
-import { context } from '@actions/github'
 import { mkdtemp, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import artifact from '@actions/artifact'
+import { context } from '@actions/github'
 import path from 'node:path'
+import { tmpdir } from 'node:os'
+import { warning } from '@actions/core'
 
 // Matrix jobs share a job name, so each leg after the first takes the next
 // free number

@@ -1,5 +1,5 @@
-import { XMLParser } from 'fast-xml-parser'
 import type { TestCase } from './report.js'
+import { XMLParser } from 'fast-xml-parser'
 
 type XmlNode = Record<string, unknown>
 

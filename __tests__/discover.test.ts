@@ -1,10 +1,10 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import path from 'node:path'
 import { findReports } from '../src/discover.js'
 import { parseGoTest } from '../src/gotest.js'
 import { parseJUnit } from '../src/junit.js'
+import path from 'node:path'
+import { tmpdir } from 'node:os'
 
 vi.mock(import('@actions/core'), async () => import('../__fixtures__/core.js'))
 

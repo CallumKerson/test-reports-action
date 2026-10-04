@@ -1,10 +1,10 @@
 import type {
   debug as coreDebug,
   error as coreError,
-  info as coreInfo,
   getInput as coreGetInput,
-  setOutput as coreSetOutput,
+  info as coreInfo,
   setFailed as coreSetFailed,
+  setOutput as coreSetOutput,
   warning as coreWarning
 } from '@actions/core'
 import { vi } from 'vitest'
