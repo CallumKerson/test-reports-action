@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { countResults } from '../src/report.js'
+
+vi.setConfig({ testTimeout: 5000 })
 
 describe('report.ts', () => {
   it('counts results by status and adds up durations', () => {

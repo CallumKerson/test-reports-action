@@ -16,6 +16,8 @@ vi.mock(
   async () => import('../__fixtures__/github.js')
 )
 
+vi.setConfig({ testTimeout: 5000 })
+
 const conflict = new Error(
   'Failed to CreateArtifact: Received non-retryable error: Failed request: (409) Conflict: an artifact with this name already exists on the workflow run'
 )

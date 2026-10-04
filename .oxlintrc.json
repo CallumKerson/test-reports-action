@@ -58,9 +58,7 @@
         // Tests import the source they test from ../src
         "import/no-relative-parent-imports": "off",
         // Every test already awaits what it asserts on
-        "vitest/prefer-expect-assertions": "off",
-        // The default timeout suits every test
-        "vitest/require-test-timeout": "off"
+        "vitest/prefer-expect-assertions": "off"
       }
     },
     {
