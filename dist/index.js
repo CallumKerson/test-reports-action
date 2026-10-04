@@ -92258,8 +92258,10 @@ async function run() {
 		const reports = await Promise.all(files.map(readReport));
 		await writeSummary(reports, retentionDays);
 		await setStatuses(getInput("token", { required: true }), reports, jobName(getInput("name"), getInput("matrix")));
-		const failed = reports.reduce((total, report) => total + countResults(report.cases).failed, 0);
-		if (failed > 0) setFailed(`${failed} ${failed === 1 ? "test" : "tests"} failed`);
+		const unparsable = reports.filter((report) => report.parseError).length;
+		const failed = reports.filter((report) => !report.parseError).reduce((total, report) => total + countResults(report.cases).failed, 0);
+		const problems = [failed > 0 && `${failed} ${failed === 1 ? "test" : "tests"} failed`, unparsable > 0 && `${unparsable} ${unparsable === 1 ? "report" : "reports"} could not be parsed`].filter(Boolean);
+		if (problems.length > 0) setFailed(problems.join(" and "));
 	} catch (error) {
 		if (error instanceof Error) setFailed(error.message);
 	}
@@ -92285,7 +92287,8 @@ async function readReport(file) {
 				status: "failed",
 				durationMs: 0,
 				message
-			}]
+			}],
+			parseError: message
 		};
 	}
 }
