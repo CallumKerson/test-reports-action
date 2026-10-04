@@ -11,45 +11,6 @@ import { countResults, type TestReport } from './report.js'
 import { setStatuses } from './status.js'
 import { writeSummary } from './summary.js'
 
-/**
- * The main function for the action.
- *
- * @returns Resolves when the action is complete.
- */
-export async function run(): Promise<void> {
-  try {
-    await reportResults()
-  } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) {
-      setFailed(error.message)
-    }
-  }
-}
-
-async function reportResults(): Promise<void> {
-  const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
-  const files = await findReports(workspace)
-  // Tests often don't run because an earlier step failed, and that step
-  // already shows why
-  if (files.length === 0) {
-    warning(
-      'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
-    )
-    return
-  }
-
-  const retentionDays = parseRetentionDays(getInput('retention-days'))
-  const reports = await Promise.all(files.map(readReport))
-  await writeSummary(reports, retentionDays)
-  await setStatuses(
-    getInput('token', { required: true }),
-    reports,
-    jobName(getInput('name'), getInput('matrix'))
-  )
-  failOnProblems(reports)
-}
-
 // A report that can't be parsed is a failed test in the summary and its
 // status, but it isn't a test that failed
 function failOnProblems(reports: TestReport[]): void {
@@ -125,4 +86,43 @@ function parseRetentionDays(input: string): number {
     )
   }
   return days
+}
+
+async function reportResults(): Promise<void> {
+  const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd()
+  const files = await findReports(workspace)
+  // Tests often don't run because an earlier step failed, and that step
+  // already shows why
+  if (files.length === 0) {
+    warning(
+      'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
+    )
+    return
+  }
+
+  const retentionDays = parseRetentionDays(getInput('retention-days'))
+  const reports = await Promise.all(files.map(readReport))
+  await writeSummary(reports, retentionDays)
+  await setStatuses(
+    getInput('token', { required: true }),
+    reports,
+    jobName(getInput('name'), getInput('matrix'))
+  )
+  failOnProblems(reports)
+}
+
+/**
+ * The main function for the action.
+ *
+ * @returns Resolves when the action is complete.
+ */
+export async function run(): Promise<void> {
+  try {
+    await reportResults()
+  } catch (error) {
+    // Fail the workflow run if an error occurs
+    if (error instanceof Error) {
+      setFailed(error.message)
+    }
+  }
 }

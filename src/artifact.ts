@@ -16,20 +16,23 @@ interface Upload {
   retentionDays: number
 }
 
-/**
- * Uploads the full summary as a standalone HTML page.
- *
- * @returns A link to the artifact, or nothing if it could not be uploaded.
- */
-export async function uploadFullSummary(
-  html: string,
-  retentionDays: number
-): Promise<string | undefined> {
-  const directory = await mkdtemp(
-    path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
+async function uploadAttempt(
+  { directory, base, content, retentionDays }: Upload,
+  attempt: number
+): Promise<string> {
+  // Unzipped uploads are named after the file
+  const file = path.join(
+    directory,
+    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
   )
-  const base = `test-results-${context.job}`
-  return upload({ directory, base, content: page(html), retentionDays }, 1)
+  await writeFile(file, content)
+  const { id } = await artifact.uploadArtifact(
+    path.basename(file),
+    [file],
+    directory,
+    { retentionDays, skipArchive: true }
+  )
+  return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
 }
 
 // Each attempt depends on whether the name before it was taken, so they run
@@ -57,25 +60,6 @@ async function upload(
   }
 }
 
-async function uploadAttempt(
-  { directory, base, content, retentionDays }: Upload,
-  attempt: number
-): Promise<string> {
-  // Unzipped uploads are named after the file
-  const file = path.join(
-    directory,
-    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
-  )
-  await writeFile(file, content)
-  const { id } = await artifact.uploadArtifact(
-    path.basename(file),
-    [file],
-    directory,
-    { retentionDays, skipArchive: true }
-  )
-  return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
-}
-
 function page(html: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -85,4 +69,20 @@ ${html}
 </body>
 </html>
 `
+}
+
+/**
+ * Uploads the full summary as a standalone HTML page.
+ *
+ * @returns A link to the artifact, or nothing if it could not be uploaded.
+ */
+export async function uploadFullSummary(
+  html: string,
+  retentionDays: number
+): Promise<string | undefined> {
+  const directory = await mkdtemp(
+    path.join(process.env.RUNNER_TEMP || tmpdir(), 'test-reports-')
+  )
+  const base = `test-results-${context.job}`
+  return upload({ directory, base, content: page(html), retentionDays }, 1)
 }

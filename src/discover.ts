@@ -19,6 +19,31 @@ const formats = [
   { suffix: '.gotest.json', parse: parseGoTest }
 ]
 
+// Commit statuses are keyed by name, so a name shared by two reports would
+// have one overwrite the other
+function uniqueName(
+  relative: string,
+  suffix: string,
+  reports: { path: string; suffix: string }[]
+): string {
+  const candidates = [
+    (file: string, ext: string): string => path.posix.basename(file, ext),
+    (file: string, ext: string): string => file.slice(0, -ext.length)
+  ]
+  for (const candidate of candidates) {
+    const name = candidate(relative, suffix)
+    const clashes = reports.filter(
+      (other) => candidate(other.path, other.suffix) === name
+    )
+    if (clashes.length === 1) {
+      return name
+    }
+  }
+  // Only reports in the same directory with the same name but different
+  // formats get here
+  return relative
+}
+
 /**
  * Finds every test report in the workspace, sorted by path.
  */
@@ -48,29 +73,4 @@ export async function findReports(workspace: string): Promise<ReportFile[]> {
     ...report,
     name: uniqueName(report.path, suffix, reports)
   }))
-}
-
-// Commit statuses are keyed by name, so a name shared by two reports would
-// have one overwrite the other
-function uniqueName(
-  relative: string,
-  suffix: string,
-  reports: { path: string; suffix: string }[]
-): string {
-  const candidates = [
-    (file: string, ext: string): string => path.posix.basename(file, ext),
-    (file: string, ext: string): string => file.slice(0, -ext.length)
-  ]
-  for (const candidate of candidates) {
-    const name = candidate(relative, suffix)
-    const clashes = reports.filter(
-      (other) => candidate(other.path, other.suffix) === name
-    )
-    if (clashes.length === 1) {
-      return name
-    }
-  }
-  // Only reports in the same directory with the same name but different
-  // formats get here
-  return relative
 }
