@@ -11,7 +11,9 @@ import type { TestReport } from '../src/report.js'
 
 const findReports = jest.fn<(workspace: string) => Promise<ReportFile[]>>()
 const setStatuses =
-  jest.fn<(token: string, reports: TestReport[]) => Promise<void>>()
+  jest.fn<
+    (token: string, reports: TestReport[], jobName: string) => Promise<void>
+  >()
 const writeSummary =
   jest.fn<(reports: TestReport[], retentionDays: number) => Promise<void>>()
 
@@ -66,7 +68,7 @@ describe('main.ts', () => {
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
     expect(core.getInput).toHaveBeenCalledWith('token', { required: true })
-    expect(setStatuses).toHaveBeenCalledWith('token', reports)
+    expect(setStatuses).toHaveBeenCalledWith('token', reports, '')
     expect(core.setFailed).not.toHaveBeenCalled()
   })
 
@@ -146,8 +148,41 @@ describe('main.ts', () => {
       }
     ]
     expect(writeSummary).toHaveBeenCalledWith(reports, 7)
-    expect(setStatuses).toHaveBeenCalledWith('token', reports)
+    expect(setStatuses).toHaveBeenCalledWith('token', reports, '')
     expect(core.setFailed).toHaveBeenCalledWith('1 test failed')
+  })
+
+  it.each([
+    [
+      'the matrix values',
+      '',
+      '{"os":"ubuntu-latest","node":24}',
+      'ubuntu-latest, 24'
+    ],
+    ['nothing outside a matrix', '', 'null', ''],
+    [
+      'the name input over the matrix',
+      'unit',
+      '{"os":"ubuntu-latest"}',
+      'unit'
+    ],
+    ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
+  ])('Names the job after %s', async (_, name, matrix, expected) => {
+    core.getInput.mockImplementation(
+      (input) =>
+        ({ token: 'token', 'retention-days': '7', name, matrix })[input] ?? ''
+    )
+    findReports.mockResolvedValue([
+      await report('unit', '<testsuite><testcase name="a"/></testsuite>')
+    ])
+
+    await run()
+
+    expect(setStatuses).toHaveBeenCalledWith(
+      'token',
+      expect.anything(),
+      expected
+    )
   })
 
   it.each(['0', '1.5', 'week', ''])(

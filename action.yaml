@@ -11,6 +11,17 @@ inputs:
     description: Token used to set commit statuses, which needs statuses write permission
     required: true
     default: ${{ github.token }}
+  name:
+    description: >-
+      Name for this job's results, which goes in each commit status as
+      `Tests (<name>) / <report>`. Defaults to the job's matrix values, so
+      that matrix jobs don't overwrite each other's statuses
+    required: false
+    default: ''
+  matrix:
+    description: The job's matrix, which names its statuses. Leave as default
+    required: false
+    default: ${{ toJSON(matrix) }}
   retention-days:
     description: >-
       Days to keep the full summary for, which is uploaded as an artifact when

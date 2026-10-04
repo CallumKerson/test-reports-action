@@ -26,7 +26,11 @@ export async function run(): Promise<void> {
     const retentionDays = parseRetentionDays(core.getInput('retention-days'))
     const reports = await Promise.all(files.map(readReport))
     await writeSummary(reports, retentionDays)
-    await setStatuses(core.getInput('token', { required: true }), reports)
+    await setStatuses(
+      core.getInput('token', { required: true }),
+      reports,
+      jobName(core.getInput('name'), core.getInput('matrix'))
+    )
 
     const failed = reports.reduce(
       (total, report) => total + countResults(report.cases).failed,
@@ -63,6 +67,24 @@ async function readReport(file: ReportFile): Promise<TestReport> {
         }
       ]
     }
+  }
+}
+
+// Each job in a matrix finds reports with the same names, so without a name of
+// their own they would overwrite each other's statuses
+function jobName(name: string, matrix: string): string {
+  if (name) return name
+  try {
+    const values = JSON.parse(matrix) as Record<string, unknown> | null
+    return Object.values(values ?? {})
+      .map((value) =>
+        typeof value === 'string' ? value : JSON.stringify(value)
+      )
+      .join(', ')
+  } catch {
+    // Outside of Actions, such as with local-action, the default is left as
+    // an unevaluated expression
+    return ''
   }
 }
 
