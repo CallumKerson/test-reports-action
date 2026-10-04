@@ -31,7 +31,7 @@ describe('discover.ts', () => {
     await rm(workspace, { recursive: true, force: true })
   })
 
-  it('Finds reports of each format and names them after the file', async () => {
+  it('finds reports of each format and names them after the file', async () => {
     await files(
       'unit.junit.xml',
       'go/results.gotest.json',
@@ -59,7 +59,7 @@ describe('discover.ts', () => {
     ])
   })
 
-  it('Adds the directory to names that clash', async () => {
+  it('adds the directory to names that clash', async () => {
     await files(
       'api/results.gotest.json',
       'worker/results.gotest.json',
@@ -77,7 +77,7 @@ describe('discover.ts', () => {
     ])
   })
 
-  it('Uses the whole path for reports that only differ by format', async () => {
+  it('uses the whole path for reports that only differ by format', async () => {
     await files('ci/tests.junit.xml', 'ci/tests.gotest.json')
 
     const reports = await findReports(workspace)
@@ -88,7 +88,7 @@ describe('discover.ts', () => {
     ])
   })
 
-  it('Finds nothing in an empty workspace', async () => {
+  it('finds nothing in an empty workspace', async () => {
     await expect(findReports(workspace)).resolves.toStrictEqual([])
   })
 })

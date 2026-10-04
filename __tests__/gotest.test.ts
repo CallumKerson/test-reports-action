@@ -9,7 +9,7 @@ const events = (...lines: object[]): string =>
   lines.map((line) => JSON.stringify(line)).join('\n')
 
 describe('gotest.ts', () => {
-  it('Parses go test -json output', async () => {
+  it('parses go test -json output', async () => {
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(
@@ -26,7 +26,7 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Keeps only what the test logged as the failure message', async () => {
+  it('keeps only what the test logged as the failure message', async () => {
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(cases[1].message).toBe('calc_test.go:8: got 3, want 2')
@@ -35,7 +35,7 @@ describe('gotest.ts', () => {
     expect(cases[0].message).toBeUndefined()
   })
 
-  it('Reports a build failure with the compiler output', async () => {
+  it('reports a build failure with the compiler output', async () => {
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(cases[7].message).toBe(
@@ -47,7 +47,7 @@ describe('gotest.ts', () => {
     )
   })
 
-  it('Reports a package that fails without a failing test', () => {
+  it('reports a package that fails without a failing test', () => {
     const cases = parseGoTest(
       events(
         { Action: 'run', Package: 'p', Test: 'TestA' },
@@ -70,7 +70,7 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Fails a test that never finished', () => {
+  it('fails a test that never finished', () => {
     const cases = parseGoTest(
       events(
         { Action: 'run', Package: 'p', Test: 'TestSlow' },
@@ -95,7 +95,7 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Reports only the deepest failure in nested subtests', () => {
+  it('reports only the deepest failure in nested subtests', () => {
     const cases = parseGoTest(
       events(
         { Action: 'fail', Package: 'p', Test: 'TestA/b/c' },
@@ -117,7 +117,7 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Leaves out the message of a failure with no output', () => {
+  it('leaves out the message of a failure with no output', () => {
     expect(
       parseGoTest(events({ Action: 'fail', Package: 'p', Test: 'TestA' }))
     ).toStrictEqual([
@@ -125,7 +125,7 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Skips lines that are not JSON events', () => {
+  it('skips lines that are not JSON events', () => {
     const cases = parseGoTest(
       [
         'go: downloading example.com/dep v1.0.0',
@@ -143,11 +143,11 @@ describe('gotest.ts', () => {
     ])
   })
 
-  it('Parses an empty file', () => {
+  it('parses an empty file', () => {
     expect(parseGoTest('')).toStrictEqual([])
   })
 
-  it('Throws on output that is not from go test -json', () => {
+  it('throws on output that is not from go test -json', () => {
     expect(() =>
       parseGoTest('--- FAIL: TestA (0.00s)\nFAIL\texample.com/p\t0.1s\n')
     ).toThrow('not a go test -json report')
