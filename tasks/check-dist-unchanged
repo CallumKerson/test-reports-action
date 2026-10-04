@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#MISE description="Checks that the branch leaves dist/ alone, as only the release PR updates it"
+
+set -euo pipefail
+
+# CI passes the pull request's base branch
+base_ref=${BASE_REF:-main}
+
+git fetch --quiet origin "$base_ref"
+
+if ! git diff --quiet "origin/$base_ref...HEAD" -- dist/; then
+	echo "::error::dist/ is only updated by the release PR, revert the changes to it"
+	exit 1
+fi
+
+echo "dist/ is unchanged"

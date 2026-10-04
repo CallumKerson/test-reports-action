@@ -59,15 +59,16 @@ jobs:
       contents: read
       pull-requests: read
     steps:
+      # Checks out main for the script, the release PR's branch is checked out below
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Find the release PR
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          branch=$(gh pr list --state open --label 'autorelease: pending' \
-            --json headRefName --jq '.[0].headRefName // empty')
-          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+        run: ./.github/scripts/find-release-pr.sh
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ steps.pr.outputs.branch != '' }}
         with:
@@ -111,6 +112,4 @@ jobs:
         env:
           MAJOR: ${{ needs.release-please.outputs.major }}
           SHA: ${{ needs.release-please.outputs.sha }}
-        run: |
-          git tag --force "v$MAJOR" "$SHA"
-          git push --force origin "v$MAJOR"
+        run: ./.github/scripts/tag-major-version.sh
