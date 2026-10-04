@@ -43,6 +43,8 @@ each failure's output. The full summary is uploaded as an HTML artifact,
 linked from the job summary, and kept for `retention-days`.
 
 The step fails if any test failed, and only warns when it finds no reports.
+A report that can't be parsed shows up as a failed test, so the other reports
+are still summarised and given statuses.
 
 Setting commit statuses needs the `statuses: write` permission. Without it,
 for example on pull requests from forks, the action warns and still writes the

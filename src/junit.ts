@@ -20,11 +20,20 @@ const parser = new XMLParser({
  */
 export function parseJUnit(xml: string): TestCase[] {
   const document = parser.parse(xml) as XmlNode
-  const root = (document.testsuites ?? document) as XmlNode
-  if (!Array.isArray(root.testsuite)) {
+  // jest-junit and others write a <testsuites> with no suites in it when no
+  // tests ran
+  if ('testsuites' in document) return parseSuites(document.testsuites)
+  if (!Array.isArray(document.testsuite)) {
     throw new Error('not a JUnit report: no <testsuite> element')
   }
-  return (root.testsuite as XmlNode[]).flatMap(parseSuite)
+  return parseSuites(document)
+}
+
+function parseSuites(parent: unknown): TestCase[] {
+  // An element with no attributes or children parses as an empty string
+  if (typeof parent !== 'object' || parent === null) return []
+  const suites = (parent as XmlNode).testsuite as XmlNode[] | undefined
+  return (suites ?? []).flatMap(parseSuite)
 }
 
 function parseSuite(suite: XmlNode): TestCase[] {
@@ -32,10 +41,7 @@ function parseSuite(suite: XmlNode): TestCase[] {
   const cases = ((suite.testcase as XmlNode[] | undefined) ?? []).map(
     (testCase) => parseCase(testCase, suiteName)
   )
-  const nested = ((suite.testsuite as XmlNode[] | undefined) ?? []).flatMap(
-    parseSuite
-  )
-  return [...cases, ...nested]
+  return [...cases, ...parseSuites(suite)]
 }
 
 function parseCase(testCase: XmlNode, suiteName: string): TestCase {

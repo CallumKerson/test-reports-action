@@ -114,15 +114,40 @@ describe('main.ts', () => {
     expect(core.setFailed).not.toHaveBeenCalled()
   })
 
-  it('Fails naming a report that cannot be parsed', async () => {
-    findReports.mockResolvedValue([await report('bad', '<project/>')])
+  it('Reports a report that cannot be parsed as a failed test', async () => {
+    findReports.mockResolvedValue([
+      await report('bad', '<project/>'),
+      await report('good', '<testsuite><testcase name="a"/></testsuite>')
+    ])
 
     await run()
 
-    expect(core.setFailed).toHaveBeenCalledWith(
+    expect(core.error).toHaveBeenCalledWith(
       'Could not parse bad.junit.xml: not a JUnit report: no <testsuite> element'
     )
-    expect(setStatuses).not.toHaveBeenCalled()
+    const reports = [
+      {
+        name: 'bad',
+        path: 'bad.junit.xml',
+        cases: [
+          {
+            suite: '',
+            name: 'Could not parse report',
+            status: 'failed',
+            durationMs: 0,
+            message: 'not a JUnit report: no <testsuite> element'
+          }
+        ]
+      },
+      {
+        name: 'good',
+        path: 'good.junit.xml',
+        cases: [{ suite: '', name: 'a', status: 'passed', durationMs: 0 }]
+      }
+    ]
+    expect(writeSummary).toHaveBeenCalledWith(reports, 7)
+    expect(setStatuses).toHaveBeenCalledWith('token', reports)
+    expect(core.setFailed).toHaveBeenCalledWith('1 test failed')
   })
 
   it.each(['0', '1.5', 'week', ''])(
