@@ -19,9 +19,14 @@ permissions:
 steps:
   - uses: actions/checkout@v7
   - run: go test -json ./... > results.gotest.json
-  - uses: CallumKerson/test-reports-action@v0
+  - uses: CallumKerson/test-reports-action@23f5ad8f899498e8a8ad3a2461943bd0a1c879e2 # v0.1.1
     if: ${{ !cancelled() }}
 ```
+
+There is no major version tag, such as `@v0`, to follow. Pin a release's
+commit SHA, as above, so every run uses the same code, or at least its exact
+version tag, such as `@v0.1.1`. Dependabot and Renovate can keep either pin up
+to date.
 
 The action finds every report in the workspace, outside `node_modules`, with no
 paths to configure:
@@ -117,5 +122,4 @@ Releases are made with [release-please](https://github.com/googleapis/release-pl
 from [conventional commits](https://www.conventionalcommits.org).
 Every push to `main` updates a release PR with the next version and changelog,
 and the release workflow commits a fresh build of `dist/` to it.
-Merging the release PR tags the release, as in `v0.2.0`, and moves the major
-version tag, such as `v0`, to it.
+Merging the release PR tags the release, as in `v0.2.0`.
