@@ -211,6 +211,12 @@ aube = { path = "mise/locks/npm-oxlint/1.86.0", digest = "sha256:c8a39b595a1f17b
 backend = "npm:oxlint"
 specifiers = ["1.86.0"]
 
+[[tools."npm:oxlint-tsgolint"]]
+version = "7.0.2003"
+aube = { path = "mise/locks/npm-oxlint-tsgolint/7.0.2003", digest = "sha256:c37418e91fa88eea843f697b3d6c5657a3fe6cbae0849781df45cbb996c3cc0e" }
+backend = "npm:oxlint-tsgolint"
+specifiers = ["7.0.2003"]
+
 [[tools.oxfmt]]
 version = "0.71.0"
 aube = { path = "mise/locks/oxfmt/0.71.0", digest = "sha256:2b7bfb8c20b448ab9b5549e2e0a43049a897d50d995103408bbba2b0add2bcf0" }
