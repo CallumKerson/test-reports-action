@@ -11,6 +11,8 @@ An opinionated test reporter for GitHub Actions.
 Write your test results to files the action recognises, then run it after your
 tests, even when they fail:
 
+<!-- x-release-please-start-version -->
+
 ```yaml
 permissions:
   contents: read
@@ -19,14 +21,20 @@ permissions:
 steps:
   - uses: actions/checkout@v7
   - run: go test -json ./... > results.gotest.json
-  - uses: CallumKerson/test-reports-action@23f5ad8f899498e8a8ad3a2461943bd0a1c879e2 # v0.1.1
+  - uses: CallumKerson/test-reports-action@v0.1.1
     if: ${{ !cancelled() }}
 ```
 
-There is no major version tag, such as `@v0`, to follow. Pin a release's
-commit SHA, as above, so every run uses the same code, or at least its exact
-version tag, such as `@v0.1.1`. Dependabot and Renovate can keep either pin up
-to date.
+<!-- x-release-please-end -->
+
+There is no major version tag, such as `@v0`, to follow. Use a release's exact
+version tag, as above, or better, pin its commit SHA so every run uses the same
+code. [pinact] or Renovate's [`helpers:pinGitHubActionDigests`][pin-digests]
+preset turn version tags into SHAs, and Dependabot and Renovate keep either pin
+up to date.
+
+[pinact]: https://github.com/suzuki-shunsuke/pinact
+[pin-digests]: https://docs.renovatebot.com/presets-helpers/#helperspingithubactiondigests
 
 The action finds every report in the workspace, outside `node_modules`, with no
 paths to configure:
