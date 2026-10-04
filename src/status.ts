@@ -1,6 +1,25 @@
-import { type TestReport, countResults, describeCounts } from './report.js'
+import {
+  type TestCounts,
+  type TestReport,
+  countResults,
+  describeCounts
+} from './report.js'
 import { context, getOctokit } from '@actions/github'
 import { warning } from '@actions/core'
+
+function statusPrefix(jobName: string): string {
+  if (jobName) {
+    return `Tests (${jobName})`
+  }
+  return 'Tests'
+}
+
+function state(counts: TestCounts): 'failure' | 'success' {
+  if (counts.failed > 0) {
+    return 'failure'
+  }
+  return 'success'
+}
 
 /**
  * Sets a commit status for each report, linking back to this run.
@@ -20,7 +39,7 @@ export async function setStatuses(
     context.payload.pull_request?.head.sha ??
     context.payload.workflow_run?.head_sha ??
     context.sha
-  const prefix = jobName ? `Tests (${jobName})` : 'Tests'
+  const prefix = statusPrefix(jobName)
   const targetUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
 
   try {
@@ -32,7 +51,7 @@ export async function setStatuses(
           context: `${prefix} / ${report.name}`,
           description: describeCounts(counts),
           sha,
-          state: counts.failed > 0 ? 'failure' : 'success',
+          state: state(counts),
           target_url: targetUrl
         })
       })

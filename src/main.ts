@@ -1,5 +1,6 @@
 import { type ReportFile, findReports } from './discover.js'
 import { type TestReport, countResults } from './report.js'
+import { errorMessage, plural } from './text.js'
 import {
   getInput,
   info,
@@ -19,9 +20,8 @@ function failOnProblems(reports: TestReport[]): void {
     .filter((report) => !report.parseError)
     .reduce((total, report) => total + countResults(report.cases).failed, 0)
   const problems = [
-    failed > 0 && `${failed} ${failed === 1 ? 'test' : 'tests'} failed`,
-    unparsable > 0 &&
-      `${unparsable} ${unparsable === 1 ? 'report' : 'reports'} could not be parsed`
+    failed > 0 && `${plural(failed, 'test')} failed`,
+    unparsable > 0 && `${plural(unparsable, 'report')} could not be parsed`
   ].filter(Boolean)
   if (problems.length > 0) {
     setFailed(problems.join(' and '))
@@ -36,7 +36,7 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   } catch (error) {
     // One broken report shouldn't hide the results of all the others, so it
     // becomes a failed test of its own
-    const message = error instanceof Error ? error.message : String(error)
+    const message = errorMessage(error)
     logError(`Could not parse ${file.path}: ${message}`)
     return {
       cases: [
@@ -55,6 +55,13 @@ async function readReport(file: ReportFile): Promise<TestReport> {
   }
 }
 
+function matrixValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
+  }
+  return JSON.stringify(value)
+}
+
 // Each job in a matrix finds reports with the same names, so without a name of
 // their own they would overwrite each other's statuses
 function jobName(name: string, matrix: string): string {
@@ -66,11 +73,7 @@ function jobName(name: string, matrix: string): string {
     if (typeof values !== 'object' || values === null) {
       return ''
     }
-    return Object.values(values)
-      .map((value) =>
-        typeof value === 'string' ? value : JSON.stringify(value)
-      )
-      .join(', ')
+    return Object.values(values).map(matrixValue).join(', ')
   } catch {
     // Outside of Actions, such as with local-action, the default is left as
     // an unevaluated expression
