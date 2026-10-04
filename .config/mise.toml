@@ -1,7 +1,7 @@
 [tools]
 actionlint = "1.7.12"
 "aqua:owenlamont/ryl" = "0.22.0"
-aube = "v2.5.0"
+aube = "v2.6.1"
 hk = "2.4.0"
 node = "24.21.0"
 "npm:oxlint" = { depends = "aube", "version" = "1.86.0" }
