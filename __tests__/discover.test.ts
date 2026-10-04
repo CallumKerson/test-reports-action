@@ -25,6 +25,8 @@ describe('discover.ts', () => {
   }
 
   it('finds reports of each format and names them after the file', async () => {
+    expect.hasAssertions()
+
     const workspace = await workspaceWith(
       'unit.junit.xml',
       'go/results.gotest.json',
@@ -53,6 +55,8 @@ describe('discover.ts', () => {
   })
 
   it('adds the directory to names that clash', async () => {
+    expect.hasAssertions()
+
     const workspace = await workspaceWith(
       'api/results.gotest.json',
       'worker/results.gotest.json',
@@ -71,6 +75,8 @@ describe('discover.ts', () => {
   })
 
   it('uses the whole path for reports that only differ by format', async () => {
+    expect.hasAssertions()
+
     const workspace = await workspaceWith(
       'ci/tests.junit.xml',
       'ci/tests.gotest.json'
@@ -85,6 +91,8 @@ describe('discover.ts', () => {
   })
 
   it('finds nothing in an empty workspace', async () => {
+    expect.hasAssertions()
+
     const workspace = await workspaceWith()
 
     await expect(findReports(workspace)).resolves.toStrictEqual([])

@@ -31,6 +31,8 @@ describe('artifact.ts', () => {
   }
 
   it('uploads the summary as an unzipped HTML page and links to it', async () => {
+    expect.hasAssertions()
+
     await runnerTemp()
     artifact.uploadArtifact.mockImplementation(async (name, [file]) => {
       await expect(readFile(file, 'utf8')).resolves.toContain(
@@ -50,6 +52,8 @@ describe('artifact.ts', () => {
   })
 
   it('numbers the name when it is already taken', async () => {
+    expect.hasAssertions()
+
     await runnerTemp()
     artifact.uploadArtifact
       .mockRejectedValueOnce(conflict)
@@ -69,6 +73,8 @@ describe('artifact.ts', () => {
   })
 
   it('warns when the upload fails', async () => {
+    expect.hasAssertions()
+
     await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue(new Error('Network down'))
 
@@ -81,6 +87,8 @@ describe('artifact.ts', () => {
   })
 
   it('warns when the upload throws something other than an Error', async () => {
+    expect.hasAssertions()
+
     await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue('Network down')
 
@@ -93,6 +101,8 @@ describe('artifact.ts', () => {
   })
 
   it('gives up when every name is taken', async () => {
+    expect.hasAssertions()
+
     await runnerTemp()
     artifact.uploadArtifact.mockRejectedValue(conflict)
 

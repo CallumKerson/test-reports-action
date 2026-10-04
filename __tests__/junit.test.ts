@@ -9,6 +9,8 @@ const fixture = async (name: string): Promise<string> =>
 
 describe('junit.ts', () => {
   it('parses a jest-junit report', async () => {
+    expect.hasAssertions()
+
     const cases = parseJUnit(await fixture('jest.xml'))
 
     expect(
@@ -25,6 +27,8 @@ describe('junit.ts', () => {
   })
 
   it('parses a Surefire report with a bare testsuite root', async () => {
+    expect.hasAssertions()
+
     const cases = parseJUnit(await fixture('surefire.xml'))
 
     expect(cases.map(({ status }) => status)).toStrictEqual([
@@ -39,6 +43,8 @@ describe('junit.ts', () => {
   })
 
   it('uses the class name as the suite and falls back to the message attribute', async () => {
+    expect.hasAssertions()
+
     const cases = parseJUnit(await fixture('pytest.xml'))
 
     expect(cases[1]).toStrictEqual({
@@ -51,6 +57,8 @@ describe('junit.ts', () => {
   })
 
   it('parses nested suites', () => {
+    expect.hasAssertions()
+
     const cases = parseJUnit(`
       <testsuites>
         <testsuite name="outer">
@@ -74,6 +82,8 @@ describe('junit.ts', () => {
   })
 
   it('parses an empty suite', () => {
+    expect.hasAssertions()
+
     expect(
       parseJUnit('<testsuites><testsuite name="none"/></testsuites>')
     ).toStrictEqual([])
@@ -83,16 +93,22 @@ describe('junit.ts', () => {
     '<testsuites></testsuites>',
     '<?xml version="1.0"?><testsuites name="jest tests" tests="0"/>'
   ])('parses a report with no suites: %p', (xml) => {
+    expect.hasAssertions()
+
     expect(parseJUnit(xml)).toStrictEqual([])
   })
 
   it('parses a test case with no attributes', () => {
+    expect.hasAssertions()
+
     expect(
       parseJUnit('<testsuite name="s"><testcase/></testsuite>')
     ).toStrictEqual([{ suite: 's', name: '', status: 'passed', durationMs: 0 }])
   })
 
   it('leaves out the message of a failure with no details', () => {
+    expect.hasAssertions()
+
     const [testCase] = parseJUnit(
       '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
     )
@@ -106,6 +122,8 @@ describe('junit.ts', () => {
   })
 
   it('throws on XML that is not a JUnit report', () => {
+    expect.hasAssertions()
+
     expect(() => parseJUnit('<project><name>x</name></project>')).toThrow(
       'not a JUnit report'
     )
