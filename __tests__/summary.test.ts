@@ -43,6 +43,8 @@ const report = (name: string, cases: TestCase[]): TestReport => ({
 
 describe('summary.ts', () => {
   it('renders a heading with the counts for each report', () => {
+    expect.hasAssertions()
+
     const html = renderSummary(
       [
         report('unit', [passed, failed]),
@@ -60,6 +62,8 @@ describe('summary.ts', () => {
   })
 
   it('renders a row per suite when everything passed', () => {
+    expect.hasAssertions()
+
     const html = renderSummary(
       [
         report('unit', [
@@ -84,6 +88,8 @@ describe('summary.ts', () => {
   })
 
   it('renders a row per failed test with its escaped failure', () => {
+    expect.hasAssertions()
+
     const html = renderSummary([report('unit', [passed, failed])], 'full')
 
     expect(html).toContain(
@@ -98,6 +104,8 @@ describe('summary.ts', () => {
   })
 
   it('strips terminal colours from failure messages', () => {
+    expect.hasAssertions()
+
     const html = renderSummary(
       [
         report('unit', [
@@ -116,6 +124,8 @@ describe('summary.ts', () => {
   })
 
   it('says when a failed test has no message', () => {
+    expect.hasAssertions()
+
     const html = renderSummary(
       [
         report('go', [
@@ -131,6 +141,8 @@ describe('summary.ts', () => {
   })
 
   it('renders only the heading for a report with no tests', () => {
+    expect.hasAssertions()
+
     expect(renderSummary([report('empty', [])], 'full')).toBe(
       '<h2>Test results</h2>\n<h3>✅ empty</h3>\n<p><code>empty.junit.xml</code> · No tests · 0ms</p>'
     )
@@ -148,6 +160,8 @@ describe('summary.ts', () => {
     }))
 
     it('renders every failure in full', () => {
+      expect.hasAssertions()
+
       const html = renderSummary([report('unit', failures)], 'full')
 
       expect(html.match(/<details>/g)).toHaveLength(53)
@@ -157,6 +171,8 @@ describe('summary.ts', () => {
     })
 
     it('cuts long messages and long lists of failures short', () => {
+      expect.hasAssertions()
+
       const html = renderSummary([report('unit', failures)], 'limited')
 
       expect(html.match(/<details>/g)).toHaveLength(50)
@@ -165,6 +181,8 @@ describe('summary.ts', () => {
     })
 
     it('renders only the counts with no detail', () => {
+      expect.hasAssertions()
+
       const html = renderSummary([report('unit', failures)], 'none')
 
       expect(html).toContain('<h3>❌ unit</h3>')
@@ -184,6 +202,8 @@ describe('summary.ts', () => {
     const written = (): string => core.summary.addRaw.mock.calls[0][0]
 
     it('writes the full summary when it fits', async () => {
+      expect.hasAssertions()
+
       await writeSummary([report('unit', [passed, failed])], 7)
 
       expect(written()).toBe(
@@ -195,6 +215,8 @@ describe('summary.ts', () => {
     })
 
     it('uploads the full summary and links to it when it is too big', async () => {
+      expect.hasAssertions()
+
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
       const reports = [report('unit', big(1100))]
 
@@ -209,6 +231,8 @@ describe('summary.ts', () => {
     })
 
     it('says how many days the full summary is kept for', async () => {
+      expect.hasAssertions()
+
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
 
       await writeSummary([report('unit', big(1100))], 7)
@@ -217,6 +241,8 @@ describe('summary.ts', () => {
     })
 
     it('notes the summary was cut short when the upload fails', async () => {
+      expect.hasAssertions()
+
       uploadFullSummary.mockResolvedValue(undefined)
 
       await writeSummary([report('unit', big(1100))], 7)
@@ -227,6 +253,8 @@ describe('summary.ts', () => {
     })
 
     it('writes only the counts when the cut short summary is still too big', async () => {
+      expect.hasAssertions()
+
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
       const reports = Array.from({ length: 21 }, (_value, index) =>
         report(`unit${index}`, big(50))
@@ -250,6 +278,8 @@ describe('summary.ts', () => {
     [59_960, '1m 0s'],
     [119_600, '2m 0s']
   ])('formats %d ms as %s', (ms, text) => {
+    expect.hasAssertions()
+
     expect(formatDuration(ms)).toBe(text)
   })
 })

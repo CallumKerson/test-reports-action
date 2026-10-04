@@ -54,6 +54,8 @@ describe('main.ts', () => {
   }
 
   it('reports passing tests without failing', async () => {
+    expect.hasAssertions()
+
     const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
@@ -80,6 +82,8 @@ describe('main.ts', () => {
   })
 
   it('fails when any test failed', async () => {
+    expect.hasAssertions()
+
     const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
@@ -101,6 +105,8 @@ describe('main.ts', () => {
   })
 
   it('says one test failed', async () => {
+    expect.hasAssertions()
+
     const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(
@@ -116,6 +122,8 @@ describe('main.ts', () => {
   })
 
   it('warns and passes when there are no reports', async () => {
+    expect.hasAssertions()
+
     findReports.mockResolvedValue([])
 
     await run()
@@ -129,6 +137,8 @@ describe('main.ts', () => {
   })
 
   it('reports a report that cannot be parsed as a failed test', async () => {
+    expect.hasAssertions()
+
     const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(workspace, 'bad', '<project/>'),
@@ -171,6 +181,8 @@ describe('main.ts', () => {
   })
 
   it('fails naming both failed tests and unparsable reports', async () => {
+    expect.hasAssertions()
+
     const workspace = await setUp()
     findReports.mockResolvedValue([
       await report(workspace, 'a', '<project/>'),
@@ -207,6 +219,8 @@ describe('main.ts', () => {
     // oxlint-disable-next-line no-template-curly-in-string
     ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
   ])('names the job after %s', async (_title, name, matrix, expected) => {
+    expect.hasAssertions()
+
     const workspace = await setUp({ name, matrix })
     findReports.mockResolvedValue([
       await report(
@@ -228,6 +242,8 @@ describe('main.ts', () => {
   it.each(['0', '1.5', 'week', ''])(
     'fails when retention-days is %p',
     async (days) => {
+      expect.hasAssertions()
+
       const workspace = await setUp({ 'retention-days': days })
       findReports.mockResolvedValue([
         await report(
@@ -247,6 +263,8 @@ describe('main.ts', () => {
   )
 
   it('searches the current directory outside of Actions', async () => {
+    expect.hasAssertions()
+
     vi.stubEnv('GITHUB_WORKSPACE', undefined)
     findReports.mockResolvedValue([])
 

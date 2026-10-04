@@ -5,6 +5,8 @@ vi.setConfig({ testTimeout: 5000 })
 
 describe('report.ts', () => {
   it('counts results by status and adds up durations', () => {
+    expect.hasAssertions()
+
     expect(
       countResults([
         { suite: 's', name: 'a', status: 'passed', durationMs: 5 },
@@ -16,6 +18,8 @@ describe('report.ts', () => {
   })
 
   it('counts nothing for no cases', () => {
+    expect.hasAssertions()
+
     expect(countResults([])).toStrictEqual({
       passed: 0,
       failed: 0,

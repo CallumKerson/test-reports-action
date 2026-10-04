@@ -12,6 +12,8 @@ const events = (...lines: object[]): string =>
 
 describe('gotest.ts', () => {
   it('parses go test -json output', async () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(
@@ -29,6 +31,8 @@ describe('gotest.ts', () => {
   })
 
   it('keeps only what the test logged as the failure message', async () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(cases[1].message).toBe('calc_test.go:8: got 3, want 2')
@@ -38,6 +42,8 @@ describe('gotest.ts', () => {
   })
 
   it('reports a build failure with the compiler output', async () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(await fixture('demo.jsonl'))
 
     expect(cases[7].message).toBe(
@@ -50,6 +56,8 @@ describe('gotest.ts', () => {
   })
 
   it('reports a package that fails without a failing test', () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(
       events(
         { Action: 'run', Package: 'p', Test: 'TestA' },
@@ -73,6 +81,8 @@ describe('gotest.ts', () => {
   })
 
   it('fails a test that never finished', () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(
       events(
         { Action: 'run', Package: 'p', Test: 'TestSlow' },
@@ -98,6 +108,8 @@ describe('gotest.ts', () => {
   })
 
   it('reports only the deepest failure in nested subtests', () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(
       events(
         { Action: 'fail', Package: 'p', Test: 'TestA/b/c' },
@@ -120,6 +132,8 @@ describe('gotest.ts', () => {
   })
 
   it('leaves out the message of a failure with no output', () => {
+    expect.hasAssertions()
+
     expect(
       parseGoTest(events({ Action: 'fail', Package: 'p', Test: 'TestA' }))
     ).toStrictEqual([
@@ -128,6 +142,8 @@ describe('gotest.ts', () => {
   })
 
   it('skips lines that are not JSON events', () => {
+    expect.hasAssertions()
+
     const cases = parseGoTest(
       [
         'go: downloading example.com/dep v1.0.0',
@@ -146,10 +162,14 @@ describe('gotest.ts', () => {
   })
 
   it('parses an empty file', () => {
+    expect.hasAssertions()
+
     expect(parseGoTest('')).toStrictEqual([])
   })
 
   it('throws on output that is not from go test -json', () => {
+    expect.hasAssertions()
+
     expect(() =>
       parseGoTest('--- FAIL: TestA (0.00s)\nFAIL\texample.com/p\t0.1s\n')
     ).toThrow('not a go test -json report')

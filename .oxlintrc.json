@@ -56,9 +56,7 @@
         // Tests import from vitest explicitly rather than using globals
         "vitest/no-importing-vitest-globals": "off",
         // Tests import the source they test from ../src
-        "import/no-relative-parent-imports": "off",
-        // Every test already awaits what it asserts on
-        "vitest/prefer-expect-assertions": "off"
+        "import/no-relative-parent-imports": "off"
       }
     },
     {
