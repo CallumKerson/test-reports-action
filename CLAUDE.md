@@ -77,7 +77,7 @@ YAML files use the `.yaml` extension.
 
 - Formatting is oxfmt, with no semicolons, single quotes and no trailing commas
 - Linting is oxlint for TypeScript, rumdl for Markdown, ryl for YAML, tombi for
-  TOML and actionlint for workflows
+  TOML, and actionlint and zizmor for workflows
 
 ## Code Patterns
 
