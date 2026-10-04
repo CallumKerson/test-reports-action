@@ -15,8 +15,9 @@
     "restriction": "error"
   },
   "rules": {
-    // Each of these picks one of two equally good styles, and the code uses
-    // the other one
+    // Functions are consts, so one declaration per scope would put every
+    // function in a module in one const, and splits functions just to keep
+    // their declarations together
     "one-var": "off",
 
     // no-duplicate-imports wants one import from each module, so types are
