@@ -1,5 +1,7 @@
 type TestStatus = 'passed' | 'failed' | 'skipped'
 
+const msPerSecond = 1000
+
 interface TestCase {
   suite: string
   name: string
@@ -45,5 +47,5 @@ const describeCounts = (counts: TestCounts): string => {
   return parts.join(', ')
 }
 
-export { countResults, describeCounts }
+export { countResults, describeCounts, msPerSecond }
 export type { TestCase, TestCounts, TestReport, TestStatus }

@@ -31,8 +31,9 @@
     // An action runs on Node
     "import/no-nodejs-modules": "off",
 
-    // Arbitrary limits that would split code for no reader's benefit
-    "no-magic-numbers": "off", // test data, and units such as ms per second
+    // Naming 0 and 1, as in `length > 0` and `count === 1`, tells a reader
+    // nothing
+    "no-magic-numbers": ["error", { "ignore": [0, 1] }],
 
     // An action reads its inputs and runner settings from the environment
     "node/no-process-env": "off"
@@ -50,6 +51,8 @@
         // Mocks and stubbed environment variables stand for missing values with
         // undefined, as the APIs they stand in for do
         "no-undefined": "off",
+        // Test data is made of numbers, each only used once
+        "no-magic-numbers": "off",
         // Mocks mirror the APIs they stand in for
         "max-params": "off",
         // A describe block holds a statement for each of its tests

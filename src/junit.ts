@@ -1,4 +1,4 @@
-import type { TestCase } from './report.js'
+import { type TestCase, msPerSecond } from './report.js'
 import { XMLParser } from 'fast-xml-parser'
 
 type XmlNode = Record<string, unknown>
@@ -88,7 +88,7 @@ const caseSuite = (
 const parseCase = (testCase: XmlNode, suiteName: string): TestCase => {
   const name = attribute(testCase, 'name')
   return {
-    durationMs: seconds(attribute(testCase, 'time')) * 1000,
+    durationMs: seconds(attribute(testCase, 'time')) * msPerSecond,
     name,
     suite: caseSuite(attribute(testCase, 'classname'), name, suiteName),
     ...parseOutcome(testCase)
