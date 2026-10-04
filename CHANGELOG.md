@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/CallumKerson/test-reports-action/compare/v0.1.0...v0.1.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* say when reports could not be parsed rather than counting them as tests ([#42](https://github.com/CallumKerson/test-reports-action/issues/42)) ([fbaf266](https://github.com/CallumKerson/test-reports-action/commit/fbaf266a8e5314d80df919253d9b7d53fd2a3bb2))
+
 ## 0.1.0 (2026-10-04)
 
 
