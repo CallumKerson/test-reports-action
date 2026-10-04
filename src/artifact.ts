@@ -38,28 +38,15 @@ async function upload(
   options: Upload,
   attempt: number
 ): Promise<string | undefined> {
-  const { directory, base, content, retentionDays } = options
   if (attempt > maxAttempts) {
     warning(
-      `Could not upload the full summary: ${base}.html to ${base}-${maxAttempts}.html are all taken`
+      `Could not upload the full summary: ${options.base}.html to ${options.base}-${maxAttempts}.html are all taken`
     )
     return undefined
   }
 
-  // Unzipped uploads are named after the file
-  const file = path.join(
-    directory,
-    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
-  )
-  await writeFile(file, content)
   try {
-    const { id } = await artifact.uploadArtifact(
-      path.basename(file),
-      [file],
-      directory,
-      { retentionDays, skipArchive: true }
-    )
-    return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
+    return await uploadAttempt(options, attempt)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     if (/\(409\)/.test(message)) {
@@ -68,6 +55,25 @@ async function upload(
     warning(`Could not upload the full summary: ${message}`)
     return undefined
   }
+}
+
+async function uploadAttempt(
+  { directory, base, content, retentionDays }: Upload,
+  attempt: number
+): Promise<string> {
+  // Unzipped uploads are named after the file
+  const file = path.join(
+    directory,
+    attempt === 1 ? `${base}.html` : `${base}-${attempt}.html`
+  )
+  await writeFile(file, content)
+  const { id } = await artifact.uploadArtifact(
+    path.basename(file),
+    [file],
+    directory,
+    { retentionDays, skipArchive: true }
+  )
+  return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${id}`
 }
 
 function page(html: string): string {

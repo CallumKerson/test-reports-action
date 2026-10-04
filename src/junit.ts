@@ -52,25 +52,22 @@ function parseSuite(suite: XmlNode): TestCase[] {
 function parseCase(testCase: XmlNode, suiteName: string): TestCase {
   const name = attribute(testCase, 'name')
   const className = attribute(testCase, 'classname')
-  const result: TestCase = {
+  return {
     // Some reporters, like jest-junit, repeat the test name as the class name
     suite: className && className !== name ? className : suiteName,
     name,
-    status: 'passed',
-    durationMs: seconds(attribute(testCase, 'time')) * 1000
+    durationMs: seconds(attribute(testCase, 'time')) * 1000,
+    ...parseOutcome(testCase)
   }
+}
 
+function parseOutcome(testCase: XmlNode): Pick<TestCase, 'status' | 'message'> {
   const problems = [...list(testCase.failure), ...list(testCase.error)]
-  if (problems.length > 0) {
-    result.status = 'failed'
-    const message = problems.map(describe).filter(Boolean).join('\n\n')
-    if (message) {
-      result.message = message
-    }
-  } else if (testCase.skipped) {
-    result.status = 'skipped'
+  if (problems.length === 0) {
+    return { status: testCase.skipped ? 'skipped' : 'passed' }
   }
-  return result
+  const message = problems.map(describe).filter(Boolean).join('\n\n')
+  return message ? { status: 'failed', message } : { status: 'failed' }
 }
 
 // The body usually holds the message and a stack trace, so only fall back

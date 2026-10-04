@@ -25,7 +25,14 @@ interface Package {
   output: string[]
 }
 
-const results: Record<string, TestStatus> = {
+interface Results {
+  tests: Map<string, Test>
+  packages: Map<string, Package>
+  /** Build output, by the import path of what was built */
+  builds: Map<string, string[]>
+}
+
+const statuses: Record<string, TestStatus> = {
   pass: 'passed',
   fail: 'failed',
   skip: 'skipped'
@@ -43,54 +50,15 @@ const noise = /^\s*(?:=== (?:RUN|PAUSE|CONT|NAME)|--- (?:PASS|FAIL|SKIP):)/
  * failed case named after the package.
  */
 export function parseGoTest(ndjson: string): TestCase[] {
-  const tests = new Map<string, Test>()
-  const packages = new Map<string, Package>()
-  const builds = new Map<string, string[]>()
   const events = ndjson
     .split('\n')
     .map(parseEvent)
     .filter((event) => event !== undefined)
-
-  for (const event of events) {
-    if (event.ImportPath) {
-      if (event.Action === 'build-output') {
-        builds.set(event.ImportPath, [
-          ...(builds.get(event.ImportPath) ?? []),
-          event.Output ?? ''
-        ])
-      }
-    } else if (event.Package && event.Test) {
-      const id = key(event.Package, event.Test)
-      const test = tests.get(id) ?? {
-        pkg: event.Package,
-        name: event.Test,
-        elapsed: 0,
-        output: []
-      }
-      tests.set(id, test)
-      applyEvent(test, event)
-    } else if (event.Package) {
-      const pkg = packages.get(event.Package) ?? {
-        failed: false,
-        elapsed: 0,
-        output: []
-      }
-      packages.set(event.Package, pkg)
-      if (event.Action === 'output') {
-        pkg.output.push(event.Output ?? '')
-      }
-      if (event.Action === 'fail') {
-        pkg.failed = true
-        pkg.failedBuild = event.FailedBuild
-        pkg.elapsed = event.Elapsed ?? 0
-      }
-    }
-  }
-
   if (events.length === 0 && ndjson.trim()) {
     throw new Error('not a go test -json report: no JSON events')
   }
 
+  const { tests, packages, builds } = collect(events)
   const all = [...tests.values()]
   const { parents, failedParents } = findParents(all)
   const cases = all
@@ -103,6 +71,59 @@ export function parseGoTest(ndjson: string): TestCase[] {
   )
 
   return [...cases, ...packageFailures(packages, builds, failedPackages)]
+}
+
+function collect(events: Event[]): Results {
+  const results: Results = {
+    tests: new Map(),
+    packages: new Map(),
+    builds: new Map()
+  }
+  for (const event of events) {
+    record(results, event)
+  }
+  return results
+}
+
+function record({ tests, packages, builds }: Results, event: Event): void {
+  const { ImportPath: importPath, Package: pkg, Test: name } = event
+  if (importPath) {
+    if (event.Action === 'build-output') {
+      builds.set(importPath, [
+        ...(builds.get(importPath) ?? []),
+        event.Output ?? ''
+      ])
+    }
+  } else if (pkg && name) {
+    applyEvent(
+      getOrAdd(tests, key(pkg, name), () => ({
+        pkg,
+        name,
+        elapsed: 0,
+        output: []
+      })),
+      event
+    )
+  } else if (pkg) {
+    applyPackageEvent(
+      getOrAdd(packages, pkg, () => ({
+        failed: false,
+        elapsed: 0,
+        output: []
+      })),
+      event
+    )
+  }
+}
+
+function getOrAdd<Value>(
+  map: Map<string, Value>,
+  id: string,
+  create: () => Value
+): Value {
+  const value = map.get(id) ?? create()
+  map.set(id, value)
+  return value
 }
 
 // A package can fail without a failing test, such as from a build error
@@ -164,9 +185,19 @@ function text(value: unknown): string | undefined {
 function applyEvent(test: Test, event: Event): void {
   if (event.Action === 'output') {
     test.output.push(event.Output ?? '')
-  } else if (event.Action && event.Action in results) {
-    test.status = results[event.Action]
+  } else if (event.Action && event.Action in statuses) {
+    test.status = statuses[event.Action]
     test.elapsed = event.Elapsed ?? 0
+  }
+}
+
+function applyPackageEvent(pkg: Package, event: Event): void {
+  if (event.Action === 'output') {
+    pkg.output.push(event.Output ?? '')
+  } else if (event.Action === 'fail') {
+    pkg.failed = true
+    pkg.failedBuild = event.FailedBuild
+    pkg.elapsed = event.Elapsed ?? 0
   }
 }
 
