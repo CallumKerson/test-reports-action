@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/CallumKerson/test-reports-action/compare/v0.1.1...v0.2.0) (2026-10-04)
+
+
+### Features
+
+* report each file as its own table in the summary ([#70](https://github.com/CallumKerson/test-reports-action/issues/70)) ([7705eb7](https://github.com/CallumKerson/test-reports-action/commit/7705eb7f3d3a25e0cae78391f3c1703c2a659e76))
+
 ## [0.1.1](https://github.com/CallumKerson/test-reports-action/compare/v0.1.0...v0.1.1) (2026-10-04)
 
 
