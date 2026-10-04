@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { countResults } from '../src/report.js'
 
 describe('report.ts', () => {
-  it('Counts results by status and adds up durations', () => {
+  it('counts results by status and adds up durations', () => {
     expect(
       countResults([
         { suite: 's', name: 'a', status: 'passed', durationMs: 5 },
@@ -13,7 +13,7 @@ describe('report.ts', () => {
     ).toStrictEqual({ passed: 2, failed: 1, skipped: 1, durationMs: 16.5 })
   })
 
-  it('Counts nothing for no cases', () => {
+  it('counts nothing for no cases', () => {
     expect(countResults([])).toStrictEqual({
       passed: 0,
       failed: 0,

@@ -48,7 +48,7 @@ describe('main.ts', () => {
     await rm(workspace, { recursive: true, force: true })
   })
 
-  it('Reports passing tests without failing', async () => {
+  it('reports passing tests without failing', async () => {
     findReports.mockResolvedValue([
       await report(
         'unit',
@@ -72,7 +72,7 @@ describe('main.ts', () => {
     expect(core.setFailed).not.toHaveBeenCalled()
   })
 
-  it('Fails when any test failed', async () => {
+  it('fails when any test failed', async () => {
     findReports.mockResolvedValue([
       await report(
         'a',
@@ -90,7 +90,7 @@ describe('main.ts', () => {
     expect(core.setFailed).toHaveBeenCalledWith('2 tests failed')
   })
 
-  it('Says one test failed', async () => {
+  it('says one test failed', async () => {
     findReports.mockResolvedValue([
       await report(
         'a',
@@ -103,7 +103,7 @@ describe('main.ts', () => {
     expect(core.setFailed).toHaveBeenCalledWith('1 test failed')
   })
 
-  it('Warns and passes when there are no reports', async () => {
+  it('warns and passes when there are no reports', async () => {
     findReports.mockResolvedValue([])
 
     await run()
@@ -116,7 +116,7 @@ describe('main.ts', () => {
     expect(core.setFailed).not.toHaveBeenCalled()
   })
 
-  it('Reports a report that cannot be parsed as a failed test', async () => {
+  it('reports a report that cannot be parsed as a failed test', async () => {
     findReports.mockResolvedValue([
       await report('bad', '<project/>'),
       await report('good', '<testsuite><testcase name="a"/></testsuite>')
@@ -153,7 +153,7 @@ describe('main.ts', () => {
     expect(core.setFailed).toHaveBeenCalledWith('1 report could not be parsed')
   })
 
-  it('Fails naming both failed tests and unparsable reports', async () => {
+  it('fails naming both failed tests and unparsable reports', async () => {
     findReports.mockResolvedValue([
       await report('a', '<project/>'),
       await report('b', '<project/>'),
@@ -187,7 +187,7 @@ describe('main.ts', () => {
     // The default in action.yaml, as local-action leaves it unevaluated
     // oxlint-disable-next-line no-template-curly-in-string
     ['nothing for an unevaluated default', '', '${{ toJSON(matrix) }}', '']
-  ])('Names the job after %s', async (_, name, matrix, expected) => {
+  ])('names the job after %s', async (_, name, matrix, expected) => {
     core.getInput.mockImplementation(
       (input) =>
         ({ token: 'token', 'retention-days': '7', name, matrix })[input] ?? ''
@@ -206,7 +206,7 @@ describe('main.ts', () => {
   })
 
   it.each(['0', '1.5', 'week', ''])(
-    'Fails when retention-days is %p',
+    'fails when retention-days is %p',
     async (days) => {
       core.getInput.mockImplementation((name) =>
         name === 'retention-days' ? days : 'token'
@@ -224,7 +224,7 @@ describe('main.ts', () => {
     }
   )
 
-  it('Searches the current directory outside of Actions', async () => {
+  it('searches the current directory outside of Actions', async () => {
     delete process.env.GITHUB_WORKSPACE
     findReports.mockResolvedValue([])
 

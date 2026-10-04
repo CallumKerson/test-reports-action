@@ -24,7 +24,7 @@ describe('artifact.ts', () => {
     )
   })
 
-  it('Uploads the summary as an unzipped HTML page and links to it', async () => {
+  it('uploads the summary as an unzipped HTML page and links to it', async () => {
     artifact.uploadArtifact.mockImplementation(async (name, [file]) => {
       await expect(readFile(file, 'utf8')).resolves.toContain(
         '<title>Test results</title></head>\n<body>\n<h2>Results</h2>\n</body>'
@@ -42,7 +42,7 @@ describe('artifact.ts', () => {
     expect(options).toStrictEqual({ retentionDays: 3, skipArchive: true })
   })
 
-  it('Numbers the name when it is already taken', async () => {
+  it('numbers the name when it is already taken', async () => {
     artifact.uploadArtifact
       .mockRejectedValueOnce(conflict)
       .mockRejectedValueOnce(conflict)
@@ -60,7 +60,7 @@ describe('artifact.ts', () => {
     ])
   })
 
-  it('Warns when the upload fails', async () => {
+  it('warns when the upload fails', async () => {
     artifact.uploadArtifact.mockRejectedValue(new Error('Network down'))
 
     await expect(
@@ -71,7 +71,7 @@ describe('artifact.ts', () => {
     )
   })
 
-  it('Warns when the upload throws something other than an Error', async () => {
+  it('warns when the upload throws something other than an Error', async () => {
     artifact.uploadArtifact.mockRejectedValue('Network down')
 
     await expect(
@@ -82,7 +82,7 @@ describe('artifact.ts', () => {
     )
   })
 
-  it('Gives up when every name is taken', async () => {
+  it('gives up when every name is taken', async () => {
     artifact.uploadArtifact.mockRejectedValue(conflict)
 
     await expect(

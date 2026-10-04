@@ -27,7 +27,7 @@ describe('status.ts', () => {
     github.createCommitStatus.mockResolvedValue({})
   })
 
-  it('Sets a status for each report on the pushed commit', async () => {
+  it('sets a status for each report on the pushed commit', async () => {
     await setStatuses(
       'token',
       [
@@ -77,7 +77,7 @@ describe('status.ts', () => {
     ])
   })
 
-  it('Sets statuses on the head of a pull request', async () => {
+  it('sets statuses on the head of a pull request', async () => {
     github.context.payload = { pull_request: { head: { sha: 'head-sha' } } }
 
     await setStatuses('token', [report('unit', [])], '')
@@ -87,7 +87,7 @@ describe('status.ts', () => {
     )
   })
 
-  it('Sets statuses on the commit that triggered a workflow_run', async () => {
+  it('sets statuses on the commit that triggered a workflow_run', async () => {
     github.context.payload = { workflow_run: { head_sha: 'run-sha' } }
 
     await setStatuses('token', [report('unit', [])], '')
@@ -97,7 +97,7 @@ describe('status.ts', () => {
     )
   })
 
-  it('Adds the job name to each status', async () => {
+  it('adds the job name to each status', async () => {
     await setStatuses('token', [report('unit', [])], 'ubuntu-latest, 24')
 
     expect(github.createCommitStatus).toHaveBeenCalledWith(
@@ -105,7 +105,7 @@ describe('status.ts', () => {
     )
   })
 
-  it('Warns once when the token cannot set statuses', async () => {
+  it('warns once when the token cannot set statuses', async () => {
     github.createCommitStatus.mockRejectedValue(
       Object.assign(new Error('Resource not accessible by integration'), {
         status: 403
@@ -119,7 +119,7 @@ describe('status.ts', () => {
     )
   })
 
-  it('Throws other errors', async () => {
+  it('throws other errors', async () => {
     github.createCommitStatus.mockRejectedValue(
       Object.assign(new Error('Server Error'), { status: 500 })
     )

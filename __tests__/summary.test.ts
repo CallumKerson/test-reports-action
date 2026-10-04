@@ -37,7 +37,7 @@ describe('summary.ts', () => {
     core.summary.addRaw.mockReturnValue(core.summary)
   })
 
-  it('Renders a heading with the counts for each report', () => {
+  it('renders a heading with the counts for each report', () => {
     const html = renderSummary(
       [
         report('unit', [passed, failed]),
@@ -54,7 +54,7 @@ describe('summary.ts', () => {
     )
   })
 
-  it('Renders a row per suite when everything passed', () => {
+  it('renders a row per suite when everything passed', () => {
     const html = renderSummary(
       [
         report('unit', [
@@ -78,7 +78,7 @@ describe('summary.ts', () => {
     expect(html).not.toContain('<details>')
   })
 
-  it('Renders a row per failed test with its escaped failure', () => {
+  it('renders a row per failed test with its escaped failure', () => {
     const html = renderSummary([report('unit', [passed, failed])], 'full')
 
     expect(html).toContain(
@@ -92,7 +92,7 @@ describe('summary.ts', () => {
     expect(html).not.toContain('adds')
   })
 
-  it('Strips terminal colours from failure messages', () => {
+  it('strips terminal colours from failure messages', () => {
     const html = renderSummary(
       [
         report('unit', [
@@ -110,7 +110,7 @@ describe('summary.ts', () => {
     )
   })
 
-  it('Says when a failed test has no message', () => {
+  it('says when a failed test has no message', () => {
     const html = renderSummary(
       [
         report('go', [
@@ -125,7 +125,7 @@ describe('summary.ts', () => {
     )
   })
 
-  it('Renders only the heading for a report with no tests', () => {
+  it('renders only the heading for a report with no tests', () => {
     expect(renderSummary([report('empty', [])], 'full')).toBe(
       '<h2>Test results</h2>\n<h3>✅ empty</h3>\n<p><code>empty.junit.xml</code> · No tests · 0ms</p>'
     )
@@ -139,7 +139,7 @@ describe('summary.ts', () => {
       message
     }))
 
-    it('Renders every failure in full', () => {
+    it('renders every failure in full', () => {
       const html = renderSummary([report('unit', failures)], 'full')
 
       expect(html.match(/<details>/g)).toHaveLength(53)
@@ -148,7 +148,7 @@ describe('summary.ts', () => {
       expect(html).not.toContain('more failed tests')
     })
 
-    it('Cuts long messages and long lists of failures short', () => {
+    it('cuts long messages and long lists of failures short', () => {
       const html = renderSummary([report('unit', failures)], 'limited')
 
       expect(html.match(/<details>/g)).toHaveLength(50)
@@ -156,7 +156,7 @@ describe('summary.ts', () => {
       expect(html).toContain('<p>…and 3 more failed tests</p>')
     })
 
-    it('Renders only the counts with no detail', () => {
+    it('renders only the counts with no detail', () => {
       const html = renderSummary([report('unit', failures)], 'none')
 
       expect(html).toContain('<h3>❌ unit</h3>')
@@ -175,7 +175,7 @@ describe('summary.ts', () => {
       }))
     const written = (): string => core.summary.addRaw.mock.calls[0][0]
 
-    it('Writes the full summary when it fits', async () => {
+    it('writes the full summary when it fits', async () => {
       await writeSummary([report('unit', [passed, failed])], 7)
 
       expect(written()).toBe(
@@ -186,7 +186,7 @@ describe('summary.ts', () => {
       expect(uploadFullSummary).not.toHaveBeenCalled()
     })
 
-    it('Uploads the full summary and links to it when it is too big', async () => {
+    it('uploads the full summary and links to it when it is too big', async () => {
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
       const reports = [report('unit', big(1100))]
 
@@ -200,7 +200,7 @@ describe('summary.ts', () => {
       )
     })
 
-    it('Says how many days the full summary is kept for', async () => {
+    it('says how many days the full summary is kept for', async () => {
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
 
       await writeSummary([report('unit', big(1100))], 7)
@@ -208,7 +208,7 @@ describe('summary.ts', () => {
       expect(written()).toContain('which is kept for 7 days.')
     })
 
-    it('Notes the summary was cut short when the upload fails', async () => {
+    it('notes the summary was cut short when the upload fails', async () => {
       uploadFullSummary.mockResolvedValue(undefined)
 
       await writeSummary([report('unit', big(1100))], 7)
@@ -218,7 +218,7 @@ describe('summary.ts', () => {
       )
     })
 
-    it('Writes only the counts when the cut short summary is still too big', async () => {
+    it('writes only the counts when the cut short summary is still too big', async () => {
       uploadFullSummary.mockResolvedValue('https://example.com/artifact')
       const reports = Array.from({ length: 21 }, (_, i) =>
         report(`unit${i}`, big(50))
@@ -241,7 +241,7 @@ describe('summary.ts', () => {
     [999.6, '1.0s'],
     [59_960, '1m 0s'],
     [119_600, '2m 0s']
-  ])('Formats %d ms as %s', (ms, text) => {
+  ])('formats %d ms as %s', (ms, text) => {
     expect(formatDuration(ms)).toBe(text)
   })
 })

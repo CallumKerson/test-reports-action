@@ -65,8 +65,6 @@
         // Tests import from vitest explicitly rather than using globals
         "vitest/no-importing-vitest-globals": "off",
         "vitest/no-hooks": "off",
-        // Test names are sentences
-        "vitest/prefer-lowercase-title": "off",
         // Every test already awaits what it asserts on
         "vitest/prefer-expect-assertions": "off",
         // The default timeout suits every test

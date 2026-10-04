@@ -6,7 +6,7 @@ const fixture = async (name: string): Promise<string> =>
   readFile(new URL(`../__fixtures__/junit/${name}`, import.meta.url), 'utf8')
 
 describe('junit.ts', () => {
-  it('Parses a jest-junit report', async () => {
+  it('parses a jest-junit report', async () => {
     const cases = parseJUnit(await fixture('jest.xml'))
 
     expect(
@@ -22,7 +22,7 @@ describe('junit.ts', () => {
     expect(cases[3].durationMs).toBe(250)
   })
 
-  it('Parses a Surefire report with a bare testsuite root', async () => {
+  it('parses a Surefire report with a bare testsuite root', async () => {
     const cases = parseJUnit(await fixture('surefire.xml'))
 
     expect(cases.map(({ status }) => status)).toStrictEqual([
@@ -36,7 +36,7 @@ describe('junit.ts', () => {
     )
   })
 
-  it('Uses the class name as the suite and falls back to the message attribute', async () => {
+  it('uses the class name as the suite and falls back to the message attribute', async () => {
     const cases = parseJUnit(await fixture('pytest.xml'))
 
     expect(cases[1]).toStrictEqual({
@@ -48,7 +48,7 @@ describe('junit.ts', () => {
     })
   })
 
-  it('Parses nested suites', () => {
+  it('parses nested suites', () => {
     const cases = parseJUnit(`
       <testsuites>
         <testsuite name="outer">
@@ -71,7 +71,7 @@ describe('junit.ts', () => {
     ])
   })
 
-  it('Parses an empty suite', () => {
+  it('parses an empty suite', () => {
     expect(
       parseJUnit('<testsuites><testsuite name="none"/></testsuites>')
     ).toStrictEqual([])
@@ -80,17 +80,17 @@ describe('junit.ts', () => {
   it.each([
     '<testsuites></testsuites>',
     '<?xml version="1.0"?><testsuites name="jest tests" tests="0"/>'
-  ])('Parses a report with no suites: %p', (xml) => {
+  ])('parses a report with no suites: %p', (xml) => {
     expect(parseJUnit(xml)).toStrictEqual([])
   })
 
-  it('Parses a test case with no attributes', () => {
+  it('parses a test case with no attributes', () => {
     expect(
       parseJUnit('<testsuite name="s"><testcase/></testsuite>')
     ).toStrictEqual([{ suite: 's', name: '', status: 'passed', durationMs: 0 }])
   })
 
-  it('Leaves out the message of a failure with no details', () => {
+  it('leaves out the message of a failure with no details', () => {
     const [testCase] = parseJUnit(
       '<testsuite><testcase name="a"><failure/></testcase></testsuite>'
     )
@@ -103,7 +103,7 @@ describe('junit.ts', () => {
     })
   })
 
-  it('Throws on XML that is not a JUnit report', () => {
+  it('throws on XML that is not a JUnit report', () => {
     expect(() => parseJUnit('<project><name>x</name></project>')).toThrow(
       'not a JUnit report'
     )
