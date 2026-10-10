@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/CallumKerson/test-reports-action/compare/v0.2.1...v0.2.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency oxfmt to v0.72.0 ([#117](https://github.com/CallumKerson/test-reports-action/issues/117)) ([0389d01](https://github.com/CallumKerson/test-reports-action/commit/0389d0111bb4a6ae566a768731922b7306de8d6f))
+* **deps:** update oxlint monorepo to v1.87.0 ([#118](https://github.com/CallumKerson/test-reports-action/issues/118)) ([6bd7b8c](https://github.com/CallumKerson/test-reports-action/commit/6bd7b8ccd2170c114c2e274676649979b50a4bd9))
+
 ## [0.2.1](https://github.com/CallumKerson/test-reports-action/compare/v0.2.0...v0.2.1) (2026-10-04)
 
 
