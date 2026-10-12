@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Install tooling
-        uses: jdx/mise-action@94c60b39bc2d90ab2f9bab27f38d3cc4812c1834 # v5.1.0
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
       # Keep going when one check fails, so every check writes its report
       - run: mise run --continue-on-error ci
       # Committed dist/ is the last release's build, so report with this
@@ -53,7 +53,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install tooling
-        uses: jdx/mise-action@94c60b39bc2d90ab2f9bab27f38d3cc4812c1834 # v5.1.0
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
       - run: mise run package
       - name: Write a passing report
         run: ./.github/scripts/write-matrix-report.sh
