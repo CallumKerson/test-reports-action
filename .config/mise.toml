@@ -6,7 +6,7 @@ hk = "2.5.0"
 node = "24.21.0"
 "npm:oxlint" = { depends = "aube", "version" = "1.87.0" }
 # oxlint runs tsgolint for its type-aware rules
-"npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2003" }
+"npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2004" }
 oxfmt = { depends = "aube", "version" = "0.72.0" }
 rumdl = "0.2.78"
 # actionlint runs shellcheck over workflow run: scripts
