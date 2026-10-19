@@ -8,7 +8,7 @@ node = "24.21.0"
 # oxlint runs tsgolint for its type-aware rules
 "npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2003" }
 oxfmt = { depends = "aube", "version" = "0.72.0" }
-rumdl = "0.2.78"
+rumdl = "v0.2.79"
 # actionlint runs shellcheck over workflow run: scripts
 shellcheck = "0.11.0"
 tombi = "1.7.2"
