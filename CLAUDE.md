@@ -78,8 +78,8 @@ YAML files use the `.yaml` extension.
 
 - Formatting is oxfmt, with no semicolons, single quotes and no trailing commas
 - Linting is oxlint for TypeScript, with type-aware rules from tsgolint,
-  rumdl for Markdown, ryl for YAML, tombi for TOML, and actionlint and zizmor
-  for workflows
+  rumdl for Markdown, ryl for YAML, tombi for TOML, and jactionlint for
+  workflows
 - knip finds unused files, exports and dependencies, and imports missing from
   `package.json`. Its config is `.config/knip.jsonc`
 

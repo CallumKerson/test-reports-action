@@ -15,6 +15,7 @@ jobs:
   ci:
     name: ci
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       statuses: write
@@ -42,6 +43,7 @@ jobs:
   matrix-names:
     name: matrix-names (${{ matrix.leg }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       statuses: write

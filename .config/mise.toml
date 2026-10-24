@@ -1,19 +1,18 @@
 [tools]
-actionlint = "1.7.12"
 "aqua:owenlamont/ryl" = "0.24.0"
 aube = "v2.6.1"
-hk = "2.5.0"
+hk = "2.7.0"
+jactionlint = "2.3.0"
 node = "24.21.0"
 "npm:oxlint" = { depends = "aube", "version" = "1.87.0" }
 # oxlint runs tsgolint for its type-aware rules
 "npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2004" }
 oxfmt = { depends = "aube", "version" = "0.72.0" }
 rumdl = "v0.2.79"
-# actionlint runs shellcheck over workflow run: scripts
+# jactionlint runs shellcheck over workflow run: scripts
 shellcheck = "0.11.0"
 tombi = "1.7.2"
 typos = "1.50.3"
-zizmor = "1.30.1"
 
 [env]
 # rolldown writes each bundled module's path into dist/index.js and its
