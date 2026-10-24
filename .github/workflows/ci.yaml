@@ -36,7 +36,7 @@ jobs:
         run: mise run package
       - name: Report hk and vitest results with this action
         if: ${{ !cancelled() }}
-        uses: ./ # zizmor: ignore[self-repository]
+        uses: ./
 
   # Checks on a real runner that each leg of a matrix gets its own statuses,
   # from the matrix default in action.yaml that no unit test can evaluate
@@ -60,7 +60,7 @@ jobs:
       - name: Write a passing report
         run: ./.github/scripts/write-matrix-report.sh
       # ./ runs the build from the step above, as in the ci job
-      - uses: ./ # zizmor: ignore[self-repository]
+      - uses: ./
       - name: Check the status is named after the matrix leg
         env:
           GH_TOKEN: ${{ github.token }}
