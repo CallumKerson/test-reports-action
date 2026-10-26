@@ -1,5 +1,5 @@
 [tools]
-"aqua:owenlamont/ryl" = "0.24.0"
+"aqua:owenlamont/ryl" = "0.26.0"
 aube = "v2.6.1"
 hk = "2.7.0"
 jactionlint = "2.3.0"
