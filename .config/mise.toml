@@ -6,7 +6,7 @@ jactionlint = "2.3.0"
 node = "24.21.0"
 "npm:oxlint" = { depends = "aube", "version" = "1.87.0" }
 # oxlint runs tsgolint for its type-aware rules
-"npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2004" }
+"npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2005" }
 oxfmt = { depends = "aube", "version" = "0.72.0" }
 rumdl = "v0.2.79"
 # jactionlint runs shellcheck over workflow run: scripts
