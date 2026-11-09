@@ -4,7 +4,7 @@ aube = "v2.8.5"
 hk = "2.11.0"
 jactionlint = "2.3.0"
 node = "24.21.0"
-"npm:oxlint" = { depends = "aube", "version" = "1.87.0" }
+"npm:oxlint" = { depends = "aube", "version" = "1.91.0" }
 # oxlint runs tsgolint for its type-aware rules
 "npm:oxlint-tsgolint" = { depends = "aube", "version" = "7.0.2006" }
 oxfmt = { depends = "aube", "version" = "0.72.0" }
