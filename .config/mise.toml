@@ -1,7 +1,7 @@
 [tools]
 "aqua:owenlamont/ryl" = "0.28.0"
 aube = "v2.8.5"
-hk = "2.7.0"
+hk = "2.11.0"
 jactionlint = "2.3.0"
 node = "24.21.0"
 "npm:oxlint" = { depends = "aube", "version" = "1.87.0" }
