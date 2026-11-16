@@ -212,10 +212,10 @@ backend = "npm:oxlint"
 specifiers = ["1.91.0"]
 
 [[tools."npm:oxlint-tsgolint"]]
-version = "7.0.2006"
-aube = { path = "mise/locks/npm-oxlint-tsgolint/7.0.2006", digest = "sha256:8a406cbe8f58d44cc3412163411a10808d26cb7e7962dbcd39e689cb048db263" }
+version = "7.0.2007"
+aube = { path = "mise/locks/npm-oxlint-tsgolint/7.0.2007", digest = "sha256:1afb6d7347541d50f497a5aceb61134bd81d86a97d0bc5ea8f06b84da8d2f2dd" }
 backend = "npm:oxlint-tsgolint"
-specifiers = ["7.0.2006"]
+specifiers = ["7.0.2007"]
 
 [[tools.oxfmt]]
 version = "0.72.0"
