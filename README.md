@@ -21,7 +21,7 @@ permissions:
 steps:
   - uses: actions/checkout@v7
   - run: go test -json ./... > results.gotest.json
-  - uses: CallumKerson/test-reports-action@v0.2.1
+  - uses: CallumKerson/test-reports-action@v0.2.2
     if: ${{ !cancelled() }}
 ```
 
