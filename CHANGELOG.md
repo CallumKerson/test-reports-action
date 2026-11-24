@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/CallumKerson/test-reports-action/compare/v0.2.1...v0.3.0) (2026-11-24)
+
+
+### Features
+
+* find reports named junit.xml and name them after their directory ([#154](https://github.com/CallumKerson/test-reports-action/issues/154)) ([670bd0a](https://github.com/CallumKerson/test-reports-action/commit/670bd0a938812c39dcc472511eb19be2aa3ad1e0))
+
+
+### Bug Fixes
+
+* **deps:** update dependency oxfmt to v0.72.0 ([#117](https://github.com/CallumKerson/test-reports-action/issues/117)) ([0389d01](https://github.com/CallumKerson/test-reports-action/commit/0389d0111bb4a6ae566a768731922b7306de8d6f))
+* **deps:** update oxlint monorepo to v1.87.0 ([#118](https://github.com/CallumKerson/test-reports-action/issues/118)) ([6bd7b8c](https://github.com/CallumKerson/test-reports-action/commit/6bd7b8ccd2170c114c2e274676649979b50a4bd9))
+
 ## [0.2.1](https://github.com/CallumKerson/test-reports-action/compare/v0.2.0...v0.2.1) (2026-10-04)
 
 
