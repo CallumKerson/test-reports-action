@@ -42,12 +42,19 @@ paths to configure:
 | Format                       | File name       | Produced by                                   |
 | ---------------------------- | --------------- | --------------------------------------------- |
 | JUnit XML                    | `*.junit.xml`   | jest-junit, Maven Surefire, pytest and others |
+| JUnit XML                    | `junit.xml`     | cargo-nextest, jest-junit's default and others |
 | [Go test JSON][go-test-json] | `*.gotest.json` | `go test -json ./... > results.gotest.json`   |
 
 For each report it sets a commit status named `Tests / <name>`, where the name
 is the file name without the format suffix, so `unit.junit.xml` becomes
-`Tests / unit`. When two reports would share a name, their directories are
-added to tell them apart.
+`Tests / unit`. A file named just `junit.xml` is named after its directory
+instead, so nextest's `target/nextest/ci/junit.xml` becomes `Tests / ci`.
+When two reports would share a name, their directories are added to tell them
+apart.
+
+Every matching file is reported, so the workspace should hold only this run's
+reports. A runner that keeps the workspace between runs, such as a self-hosted
+one, can report an earlier run's files: delete them before the tests run.
 
 In a matrix job, every job finds reports with the same names, so the matrix
 values are added to each status, as in `Tests (ubuntu-latest, 24) / unit`.

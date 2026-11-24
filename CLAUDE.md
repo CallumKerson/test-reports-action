@@ -39,8 +39,8 @@ On `main`, `dist/` is the latest release's build, not a build of `main`.
 - `src/index.ts` - Entry point, which only calls `run()`
 - `src/main.ts` - `run()`, which finds and parses the reports, writes the
   summary, sets commit statuses and fails if any test failed
-- `src/discover.ts` - finds `**/*.junit.xml` and `**/*.gotest.json` in the
-  workspace and names each report
+- `src/discover.ts` - finds `**/*.junit.xml`, `**/junit.xml` and
+  `**/*.gotest.json` in the workspace and names each report
 - `src/junit.ts`, `src/gotest.ts` - parse each format into the `TestCase`
   model in `src/report.ts`
 - `src/summary.ts`, `src/status.ts` - write the job summary and the
