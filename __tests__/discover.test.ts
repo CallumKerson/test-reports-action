@@ -90,6 +90,79 @@ describe('discover.ts', () => {
     ])
   })
 
+  it('finds reports named junit.xml and names them after their directory', async () => {
+    expect.hasAssertions()
+
+    const workspace = await workspaceWith(
+      'junit.xml',
+      'target/nextest/ci/junit.xml',
+      'web/junit.xml',
+      'node_modules/dep/junit.xml',
+      'notjunit.xml'
+    )
+
+    const reports = await findReports(workspace)
+
+    expect(reports).toStrictEqual([
+      {
+        file: path.join(workspace, 'junit.xml'),
+        name: 'junit',
+        parse: parseJUnit,
+        path: 'junit.xml'
+      },
+      {
+        file: path.join(workspace, 'target/nextest/ci/junit.xml'),
+        name: 'ci',
+        parse: parseJUnit,
+        path: 'target/nextest/ci/junit.xml'
+      },
+      {
+        file: path.join(workspace, 'web/junit.xml'),
+        name: 'web',
+        parse: parseJUnit,
+        path: 'web/junit.xml'
+      }
+    ])
+  })
+
+  it('adds the directory to junit.xml names that clash', async () => {
+    expect.hasAssertions()
+
+    const workspace = await workspaceWith(
+      'api/target/nextest/ci/junit.xml',
+      'worker/target/nextest/ci/junit.xml',
+      'ci.junit.xml',
+      'unit/junit.xml',
+      'web/unit.junit.xml'
+    )
+
+    const reports = await findReports(workspace)
+
+    expect(reports.map(({ name }) => name)).toStrictEqual([
+      'api/target/nextest/ci',
+      'ci',
+      'unit',
+      'web/unit',
+      'worker/target/nextest/ci'
+    ])
+  })
+
+  it('uses the whole path for a junit.xml that clashes with a report beside it', async () => {
+    expect.hasAssertions()
+
+    const workspace = await workspaceWith(
+      'ci/tests.junit.xml',
+      'ci/tests/junit.xml'
+    )
+
+    const reports = await findReports(workspace)
+
+    expect(reports.map(({ name }) => name)).toStrictEqual([
+      'ci/tests.junit.xml',
+      'ci/tests/junit.xml'
+    ])
+  })
+
   it('finds nothing in an empty workspace', async () => {
     expect.hasAssertions()
 

@@ -108,7 +108,7 @@ const reportResults = async (): Promise<void> => {
    */
   if (files.length === 0) {
     warning(
-      'No test reports found: looked for **/*.junit.xml and **/*.gotest.json'
+      'No test reports found: looked for **/*.junit.xml, **/junit.xml and **/*.gotest.json'
     )
     return
   }
